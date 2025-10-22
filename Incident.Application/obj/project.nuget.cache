@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "bZ+Tr7fQLh4=",
+  "success": true,
+  "projectFilePath": "D:\\IncidentSolution\\Incident.Application\\Incident.Application.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\rohitkumar.chandel\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\9.0.10\\microsoft.extensions.dependencyinjection.abstractions.9.0.10.nupkg.sha512",
+    "C:\\Users\\rohitkumar.chandel\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\9.0.10\\microsoft.extensions.logging.abstractions.9.0.10.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,33 @@
+D:\IncidentSolution 1\IncidentSolution\Incident.Domain\bin\Debug\net9.0\Incident.Domain.deps.json
+D:\IncidentSolution 1\IncidentSolution\Incident.Domain\bin\Debug\net9.0\Incident.Domain.dll
+D:\IncidentSolution 1\IncidentSolution\Incident.Domain\bin\Debug\net9.0\Incident.Domain.pdb
+D:\IncidentSolution 1\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\IncidentSolution 1\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.AssemblyInfoInputs.cache
+D:\IncidentSolution 1\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.AssemblyInfo.cs
+D:\IncidentSolution 1\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.csproj.CoreCompileInputs.cache
+D:\IncidentSolution 1\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.dll
+D:\IncidentSolution 1\IncidentSolution\Incident.Domain\obj\Debug\net9.0\refint\Incident.Domain.dll
+D:\IncidentSolution 1\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.pdb
+D:\IncidentSolution 1\IncidentSolution\Incident.Domain\obj\Debug\net9.0\ref\Incident.Domain.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\Incident.Domain\bin\Debug\net9.0\Incident.Domain.deps.json
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\Incident.Domain\bin\Debug\net9.0\Incident.Domain.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\Incident.Domain\bin\Debug\net9.0\Incident.Domain.pdb
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.AssemblyInfoInputs.cache
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.AssemblyInfo.cs
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.csproj.CoreCompileInputs.cache
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\Incident.Domain\obj\Debug\net9.0\refint\Incident.Domain.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.pdb
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\Incident.Domain\obj\Debug\net9.0\ref\Incident.Domain.dll
+D:\IncidentSolution\Incident.Domain\bin\Debug\net9.0\Incident.Domain.deps.json
+D:\IncidentSolution\Incident.Domain\bin\Debug\net9.0\Incident.Domain.dll
+D:\IncidentSolution\Incident.Domain\bin\Debug\net9.0\Incident.Domain.pdb
+D:\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.AssemblyInfoInputs.cache
+D:\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.AssemblyInfo.cs
+D:\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.csproj.CoreCompileInputs.cache
+D:\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.dll
+D:\IncidentSolution\Incident.Domain\obj\Debug\net9.0\refint\Incident.Domain.dll
+D:\IncidentSolution\Incident.Domain\obj\Debug\net9.0\Incident.Domain.pdb
+D:\IncidentSolution\Incident.Domain\obj\Debug\net9.0\ref\Incident.Domain.dll

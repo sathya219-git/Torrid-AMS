@@ -1,0 +1,277 @@
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\appsettings.Development.json
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\appsettings.json
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.staticwebassets.endpoints.json
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.exe
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.deps.json
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.runtimeconfig.json
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.pdb
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Azure.Core.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Azure.Identity.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Dapper.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.AspNetCore.OpenApi.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Bcl.AsyncInterfaces.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Bcl.Cryptography.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Data.SqlClient.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Caching.Abstractions.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Caching.Memory.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Configuration.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Configuration.Abstractions.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Logging.Abstractions.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Options.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Primitives.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Identity.Client.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Identity.Client.Extensions.Msal.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.Abstractions.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.JsonWebTokens.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.Logging.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.Protocols.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.Tokens.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.OpenApi.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.SqlServer.Server.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Swashbuckle.AspNetCore.Swagger.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.ClientModel.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Configuration.ConfigurationManager.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Diagnostics.EventLog.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.IdentityModel.Tokens.Jwt.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Memory.Data.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Security.Cryptography.Pkcs.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Security.Cryptography.ProtectedData.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Text.Json.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\cs\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\de\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\es\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\fr\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\it\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\ja\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\ko\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\pl\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\pt-BR\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\ru\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\tr\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\zh-Hans\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\zh-Hant\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\unix\lib\net9.0\Microsoft.Data.SqlClient.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win\lib\net9.0\Microsoft.Data.SqlClient.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win\lib\net9.0\System.Diagnostics.EventLog.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win\lib\net9.0\System.Security.Cryptography.Pkcs.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Application.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Domain.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Infrastructure.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Application.pdb
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Infrastructure.pdb
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Domain.pdb
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.csproj.AssemblyReference.cache
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.GeneratedMSBuildEditorConfig.editorconfig
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.AssemblyInfoInputs.cache
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.AssemblyInfo.cs
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.csproj.CoreCompileInputs.cache
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.MvcApplicationPartsAssemblyInfo.cs
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.MvcApplicationPartsAssemblyInfo.cache
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\scopedcss\bundle\IncidentAPI.styles.css
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets.build.json
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets.development.json
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets.build.endpoints.json
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets\msbuild.IncidentAPI.Microsoft.AspNetCore.StaticWebAssets.props
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets\msbuild.IncidentAPI.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets\msbuild.build.IncidentAPI.props
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets\msbuild.buildMultiTargeting.IncidentAPI.props
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets\msbuild.buildTransitive.IncidentAPI.props
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets.pack.json
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\Incident.6516B158.Up2Date
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\refint\IncidentAPI.dll
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.pdb
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.genruntimeconfig.cache
+D:\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\ref\IncidentAPI.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\appsettings.Development.json
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\appsettings.json
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.staticwebassets.endpoints.json
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.exe
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.deps.json
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.runtimeconfig.json
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.pdb
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Azure.Core.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Azure.Identity.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Dapper.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.AspNetCore.OpenApi.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Bcl.Cryptography.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Data.SqlClient.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Caching.Abstractions.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Caching.Memory.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Configuration.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Options.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Primitives.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Identity.Client.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Identity.Client.Extensions.Msal.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.OpenApi.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.SqlServer.Server.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.ClientModel.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Configuration.ConfigurationManager.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Diagnostics.EventLog.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Memory.Data.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Security.Cryptography.Pkcs.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\cs\Microsoft.Data.SqlClient.resources.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\de\Microsoft.Data.SqlClient.resources.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\es\Microsoft.Data.SqlClient.resources.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\fr\Microsoft.Data.SqlClient.resources.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\it\Microsoft.Data.SqlClient.resources.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\ja\Microsoft.Data.SqlClient.resources.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\ko\Microsoft.Data.SqlClient.resources.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\pl\Microsoft.Data.SqlClient.resources.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\pt-BR\Microsoft.Data.SqlClient.resources.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\ru\Microsoft.Data.SqlClient.resources.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\tr\Microsoft.Data.SqlClient.resources.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\zh-Hans\Microsoft.Data.SqlClient.resources.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\zh-Hant\Microsoft.Data.SqlClient.resources.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\unix\lib\net9.0\Microsoft.Data.SqlClient.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win\lib\net9.0\Microsoft.Data.SqlClient.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win\lib\net9.0\System.Diagnostics.EventLog.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win\lib\net9.0\System.Security.Cryptography.Pkcs.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Application.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Domain.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Infrastructure.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Application.pdb
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Infrastructure.pdb
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Domain.pdb
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.csproj.AssemblyReference.cache
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\rpswa.dswa.cache.json
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.AssemblyInfoInputs.cache
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.AssemblyInfo.cs
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.csproj.CoreCompileInputs.cache
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\rjimswa.dswa.cache.json
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\rjsmrazor.dswa.cache.json
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\rjsmcshtml.dswa.cache.json
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\scopedcss\bundle\IncidentAPI.styles.css
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets.build.json
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets.build.json.cache
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets.development.json
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets.build.endpoints.json
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\Incident.6516B158.Up2Date
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\refint\IncidentAPI.dll
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.pdb
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.genruntimeconfig.cache
+C:\Users\kumar\Downloads\final\IncidentSolution 1\IncidentSolution\IncidentAPI\obj\Debug\net9.0\ref\IncidentAPI.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\appsettings.Development.json
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\appsettings.json
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.staticwebassets.endpoints.json
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.exe
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.deps.json
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.runtimeconfig.json
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\IncidentAPI.pdb
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Azure.Core.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Azure.Identity.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Dapper.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.AspNetCore.OpenApi.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Bcl.AsyncInterfaces.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Bcl.Cryptography.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Data.SqlClient.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Caching.Abstractions.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Caching.Memory.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Configuration.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Configuration.Abstractions.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Logging.Abstractions.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Options.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Extensions.Primitives.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Identity.Client.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.Identity.Client.Extensions.Msal.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.Abstractions.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.JsonWebTokens.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.Logging.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.Protocols.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.IdentityModel.Tokens.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.OpenApi.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Microsoft.SqlServer.Server.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Swashbuckle.AspNetCore.Swagger.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.ClientModel.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Configuration.ConfigurationManager.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Diagnostics.EventLog.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.IdentityModel.Tokens.Jwt.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Memory.Data.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Security.Cryptography.Pkcs.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Security.Cryptography.ProtectedData.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\System.Text.Json.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\cs\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\de\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\es\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\fr\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\it\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\ja\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\ko\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\pl\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\pt-BR\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\ru\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\tr\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\zh-Hans\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\zh-Hant\Microsoft.Data.SqlClient.resources.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\unix\lib\net9.0\Microsoft.Data.SqlClient.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win\lib\net9.0\Microsoft.Data.SqlClient.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win\lib\net9.0\System.Diagnostics.EventLog.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\runtimes\win\lib\net9.0\System.Security.Cryptography.Pkcs.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Application.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Domain.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Infrastructure.dll
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Application.pdb
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Infrastructure.pdb
+D:\IncidentSolution\IncidentAPI\bin\Debug\net9.0\Incident.Domain.pdb
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.csproj.AssemblyReference.cache
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.GeneratedMSBuildEditorConfig.editorconfig
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.AssemblyInfoInputs.cache
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.AssemblyInfo.cs
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.csproj.CoreCompileInputs.cache
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.MvcApplicationPartsAssemblyInfo.cs
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.MvcApplicationPartsAssemblyInfo.cache
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\scopedcss\bundle\IncidentAPI.styles.css
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets.build.json
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets.development.json
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets.build.endpoints.json
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets\msbuild.IncidentAPI.Microsoft.AspNetCore.StaticWebAssets.props
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets\msbuild.IncidentAPI.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets\msbuild.build.IncidentAPI.props
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets\msbuild.buildMultiTargeting.IncidentAPI.props
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets\msbuild.buildTransitive.IncidentAPI.props
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\staticwebassets.pack.json
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\Incident.6516B158.Up2Date
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.dll
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\refint\IncidentAPI.dll
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.pdb
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\IncidentAPI.genruntimeconfig.cache
+D:\IncidentSolution\IncidentAPI\obj\Debug\net9.0\ref\IncidentAPI.dll
