@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Threading.Tasks;
 using Xunit;
-using Incident.Application.Services;
+using Incident.Application.Interfaces;
 
 namespace Incident.Tests.Controllers
 {
