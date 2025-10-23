@@ -14,7 +14,7 @@ namespace IncidentAPI.Controllers
     public class IncidentController : ControllerBase
     {
         private readonly IIncidentService _incidentService;
- 
+
         public IncidentController(IIncidentService incidentService)
         {
             _incidentService = incidentService;
@@ -62,6 +62,7 @@ namespace IncidentAPI.Controllers
                 AssignmentGroup = request.AssignmentGroup,
                 Category = request.Category,
                 Priority = request.Priority,
+                State = request.State,
                 AssignedToName = request.AssignedToName
             };
 
@@ -71,7 +72,8 @@ namespace IncidentAPI.Controllers
             {
                 AssignedToName = d.AssignedToName,
                 Priority = d.Priority,
-                IncidentCount = d.IncidentCount
+                IncidentCount = d.IncidentCount,
+                AvgResolutionTime_Hours = d.AvgResolutionTime_Hours
             });
 
             return Ok(response);
@@ -109,6 +111,7 @@ namespace IncidentAPI.Controllers
                 AssignmentGroup = request.AssignmentGroup,
                 Category = request.Category,
                 Priority = request.Priority,
+                State = request.State,
                 AssignedToName = request.AssignedToName
             };
 
@@ -154,6 +157,7 @@ namespace IncidentAPI.Controllers
                 AssignmentGroup = request.AssignmentGroup,
                 Category = request.Category,
                 Priority = request.Priority,
+                State = request.State,
                 AssignedToName = request.AssignedToName
             };
 
@@ -176,7 +180,8 @@ namespace IncidentAPI.Controllers
                 var response = result.Select(d => new IncidentCountByPriorityResponse
                 {
                     Priority = d.Priority,
-                    IncidentCount = d.IncidentCount
+                    IncidentCount = d.IncidentCount,
+                    AvgResolutionTime_Hours = d.AvgResolutionTime_Hours
                 });
 
                 return Ok(response);
@@ -197,16 +202,17 @@ namespace IncidentAPI.Controllers
                 AssignmentGroup = request.AssignmentGroup,
                 Category = request.Category,
                 Priority = request.Priority,
+                State = request.State,
                 AssignedToName = request.AssignedToName
             };
 
             if (filter.FromDate.HasValue && filter.ToDate.HasValue && filter.FromDate > filter.ToDate)
                 return BadRequest("FromDate cannot be later than ToDate.");
-                
+
             var allowedPriorities = new List<string> { "1 - Critical", "2 - High", "3 - Moderate", "4 - Low" };
             if (!string.IsNullOrEmpty(filter.Priority) && !allowedPriorities.Contains(filter.Priority))
                 return BadRequest("Invalid priority value.");
-            
+
             try
             {
                 var result = await _incidentService.GetIncidentDetailsByPriorityAsync(filter);
@@ -218,30 +224,98 @@ namespace IncidentAPI.Controllers
 
                 var response = result.Select(d => new IncidentDetailsResponse
                 {
-                IncidentNumber = d.IncidentNumber,
-                OpenedDate = d.OpenedDate,
-                Description = d.Description,
-                CallerName = d.CallerName,
-                PriorityLevel = d.PriorityLevel,
-                CurrentState = d.CurrentState,
-                CategoryName = d.CategoryName,
-                AssignmentGroup = d.AssignmentGroup,
-                AssignedTo = d.AssignedTo,
-                LastUpdated = d.LastUpdated,
-                UpdatedBy = d.UpdatedBy,
-                ChildIncidents = d.ChildIncidents,
-                SLADueDate = d.SLADueDate,
-                SeverityLevel = d.SeverityLevel,
-                SubcategoryName = d.SubcategoryName,
-                ResolutionTime_Hours = d.ResolutionTime_Hours
+                    IncidentNumber = d.IncidentNumber,
+                    OpenedDate = d.OpenedDate,
+                    Description = d.Description,
+                    CallerName = d.CallerName,
+                    PriorityLevel = d.PriorityLevel,
+                    CurrentState = d.CurrentState,
+                    CategoryName = d.CategoryName,
+                    AssignmentGroup = d.AssignmentGroup,
+                    AssignedTo = d.AssignedTo,
+                    LastUpdated = d.LastUpdated,
+                    UpdatedBy = d.UpdatedBy,
+                    ChildIncidents = d.ChildIncidents,
+                    SLADueDate = d.SLADueDate,
+                    SeverityLevel = d.SeverityLevel,
+                    SubcategoryName = d.SubcategoryName
                 });
 
                 return Ok(response);
             }
             catch (Exception)
-            {             
+            {
                 return StatusCode(500, "An error occurred while processing your request.");
             }
+        }
+
+        [HttpGet("export")]
+        public async Task<IActionResult> ExportIncidents([FromQuery] DashboardFilterRequest request)
+        {
+            var filter = new IncidentFilter
+            {
+                FromDate = request.FromDate,
+                ToDate = request.ToDate,
+                Category = request.Category,
+                AssignmentGroup = request.AssignmentGroup,
+                Priority = request.Priority,
+                AssignedToName = request.AssignedToName,
+                State = request.State
+            };
+
+            var incidents = await _incidentService.ExportIncidentsAsync(filter);
+
+            var responseDto = incidents.Select(i => new ExportIncidentResponse
+            {
+                Number = i.Number,
+                Opened = i.Opened,
+                ShortDescription = i.ShortDescription,
+                Caller = i.Caller,
+                Priority = i.Priority,
+                State = i.State,
+                Category = i.Category,
+                AssignmentGroup = i.AssignmentGroup,
+                AssignedTo = i.AssignedTo,
+                Updated = i.Updated,
+                UpdatedBy = i.UpdatedBy,
+                ChildIncidents = i.ChildIncidents,
+                SLADue = i.SLADue,
+                Severity = i.Severity,
+                Subcategory = i.Subcategory,
+                ResolutionNotes = i.ResolutionNotes,
+                Resolved = i.Resolved,
+                SLACalculation = i.SLACalculation,
+                ParentIncident = i.ParentIncident,
+                Parent = i.Parent,
+                TaskType = i.TaskType
+            });
+
+            using var workbook = new ClosedXML.Excel.XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Incidents");
+
+            var properties = typeof(ExportIncidentResponse).GetProperties();
+            for (int i = 0; i < properties.Length; i++)
+                worksheet.Cell(1, i + 1).Value = properties[i].Name;
+
+            int row = 2;
+            foreach (var incident in responseDto)
+            {
+                for (int col = 0; col < properties.Length; col++)
+                {
+                    var cellValue = properties[col].GetValue(incident);
+                    worksheet.Cell(row, col + 1).SetValue(cellValue?.ToString() ?? string.Empty);
+                }
+                row++;
+            }
+
+            worksheet.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            stream.Position = 0;
+
+            string fileName = $"IncidentsExport_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
     }
     

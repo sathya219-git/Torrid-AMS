@@ -17,6 +17,5 @@ namespace Incident.Domain.Models
         public DateTime? SLADueDate { get; set; }
         public string SeverityLevel { get; set; } = string.Empty;
         public string SubcategoryName { get; set; } = string.Empty;
-        public int? ResolutionTime_Hours { get; set; }
     }
 }

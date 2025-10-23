@@ -37,8 +37,7 @@ namespace Incident.Tests.Controllers
         [Fact]
         public async Task GetNameAndIncidentCountByPriority_ReturnsOk()
         {
-            // Arrange
-            var request = new DashboardFilterRequest(); // same request DTO
+            var request = new DashboardFilterRequest();
             var mockService = new Mock<IIncidentService>();
 
             mockService.Setup(s => s.GetNameAndIncidentCountByPriorityAsync(It.IsAny<IncidentFilter>()))
@@ -198,6 +197,42 @@ namespace Incident.Tests.Controllers
             Assert.Equal("High", response.First().Priority);
             Assert.Equal("Open", response.First().Status);
             Assert.Equal(3, response.First().IncidentCount);
+        }
+
+        [Fact]
+        public async Task ExportIncidents_ReturnsExcelFile_WithCorrectDTOData()
+        {
+            var mockService = new Mock<IIncidentService>();
+            var request = new DashboardFilterRequest();
+
+            var mockData = new List<ExportIncident>
+            {
+                new ExportIncident { Number = "INC001", Priority = "High", State = "Open" }
+            };
+
+            mockService.Setup(s => s.ExportIncidentsAsync(It.IsAny<IncidentFilter>()))
+                       .ReturnsAsync(mockData);
+
+            var controller = new IncidentController(mockService.Object);
+
+            var result = await controller.ExportIncidents(request);
+
+            var fileResult = Assert.IsType<FileContentResult>(result);
+            Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileResult.ContentType);
+            Assert.EndsWith(".xlsx", fileResult.FileDownloadName);
+            Assert.NotNull(fileResult.FileContents);
+            Assert.True(fileResult.FileContents.Length > 0);
+
+            var dto = mockData.Select(i => new ExportIncidentResponse
+            {
+                Number = i.Number,
+                Priority = i.Priority,
+                State = i.State
+            }).First();
+
+            Assert.Equal("INC001", dto.Number);
+            Assert.Equal("High", dto.Priority);
+            Assert.Equal("Open", dto.State);
         }
     }
 }

@@ -16,6 +16,7 @@ namespace Incident.Application.Interfaces
         Task<IEnumerable<CategoryCountByGroup>> GetCategoryCountByGroupAsync(IncidentFilter filter);
         Task<IEnumerable<IncidentCountByPriority>> GetIncidentCountByPriorityAsync(IncidentFilter filter);
         Task<IEnumerable<IncidentDetails>> GetIncidentDetailsByPriorityAsync(IncidentFilter filter);
+        Task<IEnumerable<ExportIncident>> ExportIncidentsAsync(IncidentFilter filter);
     }
     
 }

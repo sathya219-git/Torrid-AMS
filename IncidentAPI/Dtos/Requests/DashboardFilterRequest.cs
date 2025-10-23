@@ -7,6 +7,7 @@ namespace Incident.API.Dtos.Requests
         public string? AssignmentGroup { get; set; }
         public string? Category { get; set; }
         public string? Priority { get; set; }
+        public string? State { get; set; }
         public string? AssignedToName { get; set; }
     }
 }

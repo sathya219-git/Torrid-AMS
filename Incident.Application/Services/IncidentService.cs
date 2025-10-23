@@ -11,13 +11,13 @@ namespace Incident.Application.Services
     public class IncidentService : IIncidentService
     {
         private readonly IIncidentRepository _incidentRepository;
-         private readonly ILogger<IncidentService> _logger;
+        private readonly ILogger<IncidentService> _logger;
 
-    public IncidentService(IIncidentRepository incidentRepository, ILogger<IncidentService> logger)
-    {
-        _incidentRepository = incidentRepository;
-        _logger = logger;
-    }
+        public IncidentService(IIncidentRepository incidentRepository, ILogger<IncidentService> logger)
+        {
+            _incidentRepository = incidentRepository;
+            _logger = logger;
+        }
 
         public async Task<IEnumerable<NameAndIncidentCountByPriority>> GetNameAndIncidentCountByPriorityAsync(IncidentFilter filter)
         {
@@ -74,7 +74,12 @@ namespace Incident.Application.Services
         {
             _logger.LogInformation("Fetching incident details by priority");
             return await _incidentRepository.GetIncidentDetailsByPriorityAsync(filter);
-        }       
-
+        }
+        public async Task<IEnumerable<ExportIncident>> ExportIncidentsAsync(IncidentFilter filter)
+        {
+            _logger.LogInformation("Fetching export incidents data");
+            var result = await _incidentRepository.ExportIncidentsAsync(filter);
+            return result;
+        }
     }
 }

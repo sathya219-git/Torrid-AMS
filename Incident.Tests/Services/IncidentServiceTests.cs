@@ -14,7 +14,6 @@ namespace Incident.Tests.Services
         [Fact]
         public async Task GetDashboardKpisAsync_ReturnsData()
         {
-            // Arrange
             var filter = new IncidentFilter { FromDate = null, ToDate = null };
 
             var mockRepo = new Mock<IIncidentRepository>();
@@ -105,8 +104,8 @@ namespace Incident.Tests.Services
             var service = new IncidentService(mockRepo.Object, mockLogger.Object);
 
             var result = await service.GetIncidentCountByPriorityAsync(filter);
-            Assert.Equal(2, result.Count());            
-            Assert.Contains(result, r=> r.Priority == "High" && r.IncidentCount == 12);
+            Assert.Equal(2, result.Count());
+            Assert.Contains(result, r => r.Priority == "High" && r.IncidentCount == 12);
         }
 
 
@@ -178,6 +177,27 @@ namespace Incident.Tests.Services
 
             Assert.Equal(2, result.Count());
             Assert.Contains(result, r => r.Priority == "High" && r.Status == "Open");
+        }
+
+        [Fact]
+        public async Task ExportIncidentsAsync_ReturnsData()
+        {
+            var filter = new IncidentFilter();
+            var mockRepo = new Mock<IIncidentRepository>();
+            var expected = new List<ExportIncident>
+            {
+                new ExportIncident { Number = "INC001", Priority = "High", State = "Open" }
+            };
+
+            mockRepo.Setup(r => r.ExportIncidentsAsync(It.IsAny<IncidentFilter>()))
+                     .ReturnsAsync(expected);
+
+            var mockLogger = new Mock<ILogger<IncidentService>>();
+            var service = new IncidentService(mockRepo.Object, mockLogger.Object);
+            var result = await service.ExportIncidentsAsync(new IncidentFilter());
+
+            Assert.Single(result);
+            Assert.Contains(result, r => r.Number == "INC001" && r.Priority == "High" && r.State == "Open");
         }
     }
 }

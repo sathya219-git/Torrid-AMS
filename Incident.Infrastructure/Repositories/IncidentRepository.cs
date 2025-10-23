@@ -35,6 +35,7 @@ namespace Incident.Infrastructure.Repositories
             parameters.Add("@p_category", filter.Category, DbType.String);
             parameters.Add("@p_assignmentGroup", filter.AssignmentGroup, DbType.String);
             parameters.Add("@p_priority", filter.Priority, DbType.String);
+            parameters.Add("@p_state", filter.State, DbType.String);
             parameters.Add("@p_assignedToName", filter.AssignedToName, DbType.String);
 
             try
@@ -131,6 +132,7 @@ namespace Incident.Infrastructure.Repositories
                 parameters.Add("@p_category", filter.Category);
                 parameters.Add("@p_assignmentGroup", filter.AssignmentGroup);
                 parameters.Add("@p_priority", filter.Priority);
+                parameters.Add("@p_state", filter.State, DbType.String);                            
                 parameters.Add("@p_assignedToName", filter.AssignedToName);
 
                 var result = await connection.QueryAsync<StatusCountByPriority>(
@@ -190,6 +192,7 @@ namespace Incident.Infrastructure.Repositories
             parameters.Add("@p_category", filter.Category, DbType.String);
             parameters.Add("@p_assignmentGroup", filter.AssignmentGroup, DbType.String);
             parameters.Add("@p_priority", filter.Priority, DbType.String);
+            parameters.Add("@p_state", filter.State, DbType.String);                        
             parameters.Add("@p_assignedToName", filter.AssignedToName, DbType.String);
 
             try
@@ -210,7 +213,7 @@ namespace Incident.Infrastructure.Repositories
                 throw;
             }
         }
-        
+
         public async Task<IEnumerable<IncidentDetails>> GetIncidentDetailsByPriorityAsync(IncidentFilter filter)
         {
             _logger.LogInformation("Calling SP 'sp_GetIncidentDetailsByPriority' with parameters: {@Filter}", filter);
@@ -223,6 +226,7 @@ namespace Incident.Infrastructure.Repositories
             parameters.Add("@p_category", filter.Category, DbType.String);
             parameters.Add("@p_assignmentGroup", filter.AssignmentGroup, DbType.String);
             parameters.Add("@p_priority", filter.Priority, DbType.String);
+            parameters.Add("@p_state", filter.State, DbType.String);
             parameters.Add("@p_assignedToName", filter.AssignedToName, DbType.String);
 
             try
@@ -240,6 +244,40 @@ namespace Incident.Infrastructure.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error executing SP 'sp_GetIncidentDetailsByPriority'");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<ExportIncident>> ExportIncidentsAsync(IncidentFilter filter)
+        {
+            _logger.LogInformation("Calling SP 'sp_ExportIncidents' with parameters: {@Filter}", filter);
+
+            using var connection = new SqlConnection(_connectionString);
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@p_fromDate", filter.FromDate, DbType.DateTime);
+            parameters.Add("@p_toDate", filter.ToDate, DbType.DateTime);
+            parameters.Add("@p_category", filter.Category, DbType.String);
+            parameters.Add("@p_assignmentGroup", filter.AssignmentGroup, DbType.String);
+            parameters.Add("@p_priority", filter.Priority, DbType.String);
+            parameters.Add("@p_assignedToName", filter.AssignedToName, DbType.String);
+            parameters.Add("@p_state", filter.State, DbType.String);
+
+            try
+            {
+                await connection.OpenAsync();
+
+                var result = await connection.QueryAsync<ExportIncident>(
+                    "sp_ExportIncidents",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error executing SP 'sp_ExportIncidents'");
                 throw;
             }
         }
