@@ -35,20 +35,15 @@ namespace Incident.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetNameAndIncidentCountByPriority_ReturnsOk()
+        public async Task GetNameAndIncidentCountByPriority_ReturnsPaginatedResponse()
         {
-            var request = new DashboardFilterRequest();
-            var mockService = new Mock<IIncidentService>();
+            var request = new DashboardFilterRequest { PageNumber = 1, PageSize = 4, Search = "John" };
 
+            var mockService = new Mock<IIncidentService>();
             mockService.Setup(s => s.GetNameAndIncidentCountByPriorityAsync(It.IsAny<IncidentFilter>()))
                        .ReturnsAsync(new List<NameAndIncidentCountByPriority>
                        {
-                           new NameAndIncidentCountByPriority
-                           {
-                               AssignedToName = "John",
-                               Priority = "High",
-                               IncidentCount = 5
-                           }
+                   new NameAndIncidentCountByPriority { AssignedToName = "John", Priority = "High", IncidentCount = 10, AvgResolutionTime_Hours = 5.2, TotalCount = 40 }
                        });
 
             var controller = new IncidentController(mockService.Object);
@@ -56,12 +51,11 @@ namespace Incident.Tests.Controllers
             var result = await controller.GetNameAndIncidentCountByPriority(request);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsAssignableFrom<IEnumerable<NameAndIncidentCountByPriorityResponse>>(okResult.Value);
+            var response = Assert.IsType<PaginatedResponse<NameAndIncidentCountByPriorityResponse>>(okResult.Value);
 
-            Assert.Single(response);
-            Assert.Equal("John", response.First().AssignedToName);
-            Assert.Equal("High", response.First().Priority);
-            Assert.Equal(5, response.First().IncidentCount);
+            Assert.Single(response.Data);
+            Assert.Equal(40, response.TotalCount);
+            Assert.Equal("John", response.Data.First().AssignedToName);
         }
 
         [Fact]
@@ -115,39 +109,27 @@ namespace Incident.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetIncidentDetailsByPriority_ReturnsOk()
+        public async Task GetIncidentDetailsByPriority_ReturnsPaginatedResponse()
         {
-            var request = new DashboardFilterRequest();
-            var mockService = new Mock<IIncidentService>();
+            var request = new DashboardFilterRequest { PageNumber = 1, PageSize = 8, Search = "INC001" };
 
+            var mockService = new Mock<IIncidentService>();
             mockService.Setup(s => s.GetIncidentDetailsByPriorityAsync(It.IsAny<IncidentFilter>()))
-                .ReturnsAsync(new List<IncidentDetails>
-                {
-                    new IncidentDetails
-                    {
-                        IncidentNumber = "INC1001",
-                        CallerName = "Alice",
-                        PriorityLevel = "High",
-                        CategoryName = "Software",
-                        AssignmentGroup = "Support Team",
-                        AssignedTo = "John",
-                        CurrentState = "In Progress"
-                    }
-                });
+                       .ReturnsAsync(new List<IncidentDetailsByPriority>
+                       {
+                   new IncidentDetailsByPriority { IncidentNumber = "INC001", Description = "Test Incident", TotalCount = 50 }
+                       });
 
             var controller = new IncidentController(mockService.Object);
 
             var result = await controller.GetIncidentDetailsByPriority(request);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsAssignableFrom<IEnumerable<IncidentDetailsResponse>>(okResult.Value);
+            var response = Assert.IsType<PaginatedResponse<IncidentDetailsByPriorityResponse>>(okResult.Value);
 
-            Assert.Single(response);
-            Assert.Contains("INC1001", response.First().IncidentNumber);
-            Assert.Contains("High", response.First().PriorityLevel);
-            Assert.Contains("Software", response.First().CategoryName);
-            Assert.Contains("John", response.First().AssignedTo);
-
+            Assert.Single(response.Data);
+            Assert.Equal(50, response.TotalCount);
+            Assert.Equal("INC001", response.Data.First().IncidentNumber);
         }
 
         [Fact]

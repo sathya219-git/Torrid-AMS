@@ -1,8 +1,8 @@
 namespace Incident.API.Dtos.Responses
 {
-    public class IncidentDetailsResponse
+    public class IncidentDetailsByPriorityResponse
     {
-        public string IncidentNumber { get; set; } = string.Empty;
+       public string IncidentNumber { get; set; } = string.Empty;
         public DateTime? OpenedDate { get; set; }
         public string Description { get; set; } = string.Empty;
         public string CallerName { get; set; } = string.Empty;
@@ -11,6 +11,7 @@ namespace Incident.API.Dtos.Responses
         public string CategoryName { get; set; } = string.Empty;
         public string AssignmentGroup { get; set; } = string.Empty;
         public string AssignedTo { get; set; } = string.Empty;
+        public DateTime? ResolutionDate { get; set; }
         public DateTime? LastUpdated { get; set; }
         public string UpdatedBy { get; set; } = string.Empty;
         public string ChildIncidents { get; set; } = string.Empty;

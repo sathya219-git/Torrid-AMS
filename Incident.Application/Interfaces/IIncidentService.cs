@@ -9,13 +9,14 @@ namespace Incident.Application.Interfaces
 {
     public interface IIncidentService 
     {
-        Task<IEnumerable<NameAndIncidentCountByPriority>> GetNameAndIncidentCountByPriorityAsync(IncidentFilter filter);        
+        Task<IEnumerable<NameAndIncidentCountByPriority>> GetNameAndIncidentCountByPriorityAsync(IncidentFilter filter);
+        
         Task<IEnumerable<AssignmentGroup>> GetAssignmentGroupsAsync(IncidentFilter filter);
         Task<DashboardKpi?> GetDashboardKpisAsync(IncidentFilter filter);
         Task<IEnumerable<StatusCountByPriority>> GetStatusCountByPriorityAsync(IncidentFilter filter);
         Task<IEnumerable<CategoryCountByGroup>> GetCategoryCountByGroupAsync(IncidentFilter filter);
         Task<IEnumerable<IncidentCountByPriority>> GetIncidentCountByPriorityAsync(IncidentFilter filter);
-        Task<IEnumerable<IncidentDetails>> GetIncidentDetailsByPriorityAsync(IncidentFilter filter);
+        Task<IEnumerable<IncidentDetailsByPriority>> GetIncidentDetailsByPriorityAsync(IncidentFilter filter);
         Task<IEnumerable<ExportIncident>> ExportIncidentsAsync(IncidentFilter filter);
     }
     

@@ -39,15 +39,17 @@ namespace Incident.Tests.Services
             Assert.Equal(10, result.TotalIncidents);
         }
 
+
         [Fact]
         public async Task GetNameAndIncidentCountByPriorityAsync_ReturnsData()
         {
-            var filter = new IncidentFilter();
+            var filter = new IncidentFilter { PageNumber = 1, PageSize = 4, Search = "John" };
+
             var mockRepo = new Mock<IIncidentRepository>();
             mockRepo.Setup(r => r.GetNameAndIncidentCountByPriorityAsync(filter))
                     .ReturnsAsync(new List<NameAndIncidentCountByPriority>
                     {
-                        new NameAndIncidentCountByPriority { AssignedToName="John", Priority="High", IncidentCount=5 }
+                new NameAndIncidentCountByPriority { AssignedToName = "John", Priority = "High", IncidentCount = 10, AvgResolutionTime_Hours = 5.2, TotalCount = 40 }
                     });
 
             var mockLogger = new Mock<ILogger<IncidentService>>();
@@ -112,21 +114,13 @@ namespace Incident.Tests.Services
         [Fact]
         public async Task GetIncidentDetailsByPriorityAsync_ReturnsData()
         {
-            var filter = new IncidentFilter();
+            var filter = new IncidentFilter { PageNumber = 1, PageSize = 8, Search = "INC001" };
+
             var mockRepo = new Mock<IIncidentRepository>();
             mockRepo.Setup(r => r.GetIncidentDetailsByPriorityAsync(filter))
-                    .ReturnsAsync(new List<IncidentDetails>
+                    .ReturnsAsync(new List<IncidentDetailsByPriority>
                     {
-                        new IncidentDetails
-                        {
-                            IncidentNumber = "INC1002",
-                            CallerName = "Bob",
-                            PriorityLevel = "Low",
-                            CategoryName = "Hardware",
-                            AssignmentGroup = "Field Team",
-                            AssignedTo = "Jane",
-                            CurrentState = "Resolved"
-                        }
+                new IncidentDetailsByPriority { IncidentNumber = "INC001", Description = "Test Incident", TotalCount = 50 }
                     });
 
             var mockLogger = new Mock<ILogger<IncidentService>>();
@@ -135,8 +129,9 @@ namespace Incident.Tests.Services
             var result = await service.GetIncidentDetailsByPriorityAsync(filter);
 
             Assert.Single(result);
-            Assert.Contains(result, r => r.IncidentNumber == "INC1002" && r.CallerName == "Bob" && r.PriorityLevel == "Low" && r.CategoryName == "Hardware");
+            Assert.Equal("INC001", result.First().IncidentNumber);
         }
+        
         [Fact]
         public async Task GetCategoryCountByGroupAsync_ReturnsData()
         {
@@ -199,5 +194,6 @@ namespace Incident.Tests.Services
             Assert.Single(result);
             Assert.Contains(result, r => r.Number == "INC001" && r.Priority == "High" && r.State == "Open");
         }
+
     }
 }

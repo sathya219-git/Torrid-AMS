@@ -21,10 +21,8 @@ namespace Incident.Application.Services
 
         public async Task<IEnumerable<NameAndIncidentCountByPriority>> GetNameAndIncidentCountByPriorityAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Fetching incident count by priority");
-
+            _logger.LogInformation("Fetching NameAndIncidentCountByPriority with filter: {@Filter}", filter);
             var result = await _incidentRepository.GetNameAndIncidentCountByPriorityAsync(filter);
-
             return result;
         }
 
@@ -70,11 +68,12 @@ namespace Incident.Application.Services
             return await _incidentRepository.GetIncidentCountByPriorityAsync(filter);
         }
 
-        public async Task<IEnumerable<IncidentDetails>> GetIncidentDetailsByPriorityAsync(IncidentFilter filter)
+        public async Task<IEnumerable<IncidentDetailsByPriority>> GetIncidentDetailsByPriorityAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Fetching incident details by priority");
+            _logger.LogInformation("Fetching IncidentDetailsByPriority with filter: {@Filter}", filter);
             return await _incidentRepository.GetIncidentDetailsByPriorityAsync(filter);
         }
+        
         public async Task<IEnumerable<ExportIncident>> ExportIncidentsAsync(IncidentFilter filter)
         {
             _logger.LogInformation("Fetching export incidents data");
