@@ -37,7 +37,7 @@ namespace Incident.Tests.Controllers
         [Fact]
         public async Task GetNameAndIncidentCountByPriority_ReturnsPaginatedResponse()
         {
-            var request = new DashboardFilterRequest { PageNumber = 1, PageSize = 4, Search = "John" };
+            var request = new DashboardFilterPaginatedRequest { PageNumber = 1, PageSize = 4, Search = "John" };
 
             var mockService = new Mock<IIncidentService>();
             mockService.Setup(s => s.GetNameAndIncidentCountByPriorityAsync(It.IsAny<IncidentFilter>()))
@@ -111,7 +111,7 @@ namespace Incident.Tests.Controllers
         [Fact]
         public async Task GetIncidentDetailsByPriority_ReturnsPaginatedResponse()
         {
-            var request = new DashboardFilterRequest { PageNumber = 1, PageSize = 8, Search = "INC001" };
+            var request = new DashboardFilterPaginatedRequest { PageNumber = 1, PageSize = 8, Search = "INC001" };
 
             var mockService = new Mock<IIncidentService>();
             mockService.Setup(s => s.GetIncidentDetailsByPriorityAsync(It.IsAny<IncidentFilter>()))

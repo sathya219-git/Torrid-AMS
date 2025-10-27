@@ -53,7 +53,7 @@ namespace IncidentAPI.Controllers
         }
 
         [HttpGet("nameandcountbypriority")]
-        public async Task<IActionResult> GetNameAndIncidentCountByPriority([FromQuery] DashboardFilterRequest request)
+        public async Task<IActionResult> GetNameAndIncidentCountByPriority([FromQuery] DashboardFilterPaginatedRequest request)
         {
             var filter = new IncidentFilter
             {
@@ -209,7 +209,7 @@ namespace IncidentAPI.Controllers
         }
 
         [HttpGet("detailsbypriority")]
-        public async Task<IActionResult> GetIncidentDetailsByPriority([FromQuery] DashboardFilterRequest request)
+        public async Task<IActionResult> GetIncidentDetailsByPriority([FromQuery] DashboardFilterPaginatedRequest request)
         {
             var filter = new IncidentFilter
             {
