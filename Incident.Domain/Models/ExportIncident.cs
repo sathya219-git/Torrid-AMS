@@ -14,12 +14,12 @@ namespace Incident.Domain.Models
         public DateTime? Updated { get; set; }
         public string UpdatedBy { get; set; } = string.Empty;
         public int? ChildIncidents { get; set; }
-        public DateTime? SLADue { get; set; }
+        public DateTime? SlaDue { get; set; }
         public string Severity { get; set; } = string.Empty;
         public string Subcategory { get; set; } = string.Empty;
         public string ResolutionNotes { get; set; } = string.Empty;
         public DateTime? Resolved { get; set; }
-        public string SLACalculation { get; set; } = string.Empty;
+        public string SlaCalculation { get; set; } = string.Empty;
         public string ParentIncident { get; set; } = string.Empty;
         public string Parent { get; set; } = string.Empty;
         public string TaskType { get; set; } = string.Empty;

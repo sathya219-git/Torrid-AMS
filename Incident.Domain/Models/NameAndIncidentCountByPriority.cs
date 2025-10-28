@@ -2,10 +2,26 @@ namespace Incident.Domain.Models
 {
     public class NameAndIncidentCountByPriority
     {
-        public string AssignedToName { get; set; } = string.Empty;
-        public string Priority { get; set; } = string.Empty;
-        public int IncidentCount { get; set; }
-        public double? AvgResolutionTime_Hours { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public int P1 { get; set; }
+        public int P2 { get; set; }
+        public int P3 { get; set; }
+        public int P4 { get; set; }
         public int TotalCount { get; set; } 
+        public string AvgResolvedTime { get; set; } = string.Empty;
+    }
+        public class PagedMemberIncidentStats
+    {
+        public IEnumerable<NameAndIncidentCountByPriority> MemberDetails { get; set; } = new List<NameAndIncidentCountByPriority>();
+        public PaginationInfo Pagination { get; set; } = new();
+    }
+
+    public class PaginationInfo
+    {
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public int TotalRecords { get; set; }
+        public int TotalPages { get; set; }
+        public string SortBy { get; set; } = string.Empty;
     }
 }

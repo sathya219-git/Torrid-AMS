@@ -35,77 +35,131 @@ namespace Incident.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetNameAndIncidentCountByPriority_ReturnsPaginatedResponse()
+        public async Task GetNameAndIncidentCountByPriority_ReturnsOkWithPaginatedResponse()
         {
-            var request = new DashboardFilterPaginatedRequest { PageNumber = 1, PageSize = 4, Search = "John" };
+            // Arrange
+            var request = new DashboardFilterPaginatedRequest
+            {
+                PageNumber = 1,
+                PageSize = 4,
+                AssignedToName = new List<string> { "John" } // ✅ FIXED: list instead of string
+            };
+
+            var pagedResult = new PagedMemberIncidentStats
+            {
+                MemberDetails = new List<NameAndIncidentCountByPriority>
+        {
+            new NameAndIncidentCountByPriority
+            {
+                Name = "John",
+                P1 = 5,
+                P2 = 2,
+                P3 = 1,
+                P4 = 0,
+                AvgResolvedTime = "4h"
+            }
+        },
+                Pagination = new PaginationInfo
+                {
+                    Page = 1,
+                    PageSize = 4,
+                    TotalRecords = 1,
+                    TotalPages = 1,
+                    SortBy = "Alphabetical"
+                }
+            };
 
             var mockService = new Mock<IIncidentService>();
             mockService.Setup(s => s.GetNameAndIncidentCountByPriorityAsync(It.IsAny<IncidentFilter>()))
-                       .ReturnsAsync(new List<NameAndIncidentCountByPriority>
-                       {
-                   new NameAndIncidentCountByPriority { AssignedToName = "John", Priority = "High", IncidentCount = 10, AvgResolutionTime_Hours = 5.2, TotalCount = 40 }
-                       });
+                       .ReturnsAsync(pagedResult);
 
             var controller = new IncidentController(mockService.Object);
 
+            // Act
             var result = await controller.GetNameAndIncidentCountByPriority(request);
 
+            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<PaginatedResponse<NameAndIncidentCountByPriorityResponse>>(okResult.Value);
+            var response = Assert.IsType<MemberIncidentStatsResponse>(okResult.Value);
 
-            Assert.Single(response.Data);
-            Assert.Equal(40, response.TotalCount);
-            Assert.Equal("John", response.Data.First().AssignedToName);
+            Assert.NotNull(response);
+            Assert.Single(response.MemberDetails);
+            Assert.Equal("John", response.MemberDetails.First().Name);
+            Assert.Equal(1, response.Pagination.TotalRecords);
         }
 
         [Fact]
         public async Task GetAssignmentGroups_ReturnsOk()
         {
-            var request = new DashboardFilterRequest();
             var mockService = new Mock<IIncidentService>();
-
             mockService.Setup(s => s.GetAssignmentGroupsAsync(It.IsAny<IncidentFilter>()))
-                       .ReturnsAsync(new List<AssignmentGroup>
-                       {
-                   new AssignmentGroup { AssignmentGroupName = "Web Support" }
-                       });
+                .ReturnsAsync(new List<AssignmentGroup>
+                {
+                    new AssignmentGroup { AssignmentGroupName = "Network Team" },
+                    new AssignmentGroup { AssignmentGroupName = "DBA Team" }
+                });
 
             var controller = new IncidentController(mockService.Object);
 
-            var result = await controller.GetAssignmentGroups(request);
-
+            var result = await controller.GetAssignmentGroups(new DashboardFilterRequest());
             var okResult = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsAssignableFrom<IEnumerable<AssignmentGroupResponse>>(okResult.Value);
 
-            Assert.Single(response);
-            Assert.Equal("Web Support", response.First().AssignmentGroupName);
+            Assert.Equal(2, response.Count());
+            Assert.Contains(response, r => r.AssignmentGroupName == "Network Team");
         }
 
         [Fact]
         public async Task GetIncidentCountByPriority_ReturnsOk()
         {
-            var request = new DashboardFilterRequest();
-            var mockService = new Mock<IIncidentService>();
+            // Arrange
+            var request = new DashboardFilterRequest
+            {
+                Metrics = "weeks",
+                Priority = new List<string> { "P1 - Critical" }
+            };
 
+            var fakeData = new List<IncidentCountByPriority>
+            {
+                new IncidentCountByPriority
+                {
+                    Priority = "P1 - Critical",
+                    State = "Open",
+                    IncidentCount = 10,
+                    TotalCount = 30,
+                    TotalAverageResolvedTime = "2 weeks"
+                },
+                new IncidentCountByPriority
+                {
+                    Priority = "P1 - Critical",
+                    State = "Closed",
+                    IncidentCount = 20,
+                    TotalCount = 30,
+                    TotalAverageResolvedTime = "2 weeks"
+                }
+            };
+
+            var mockService = new Mock<IIncidentService>();
             mockService.Setup(s => s.GetIncidentCountByPriorityAsync(It.IsAny<IncidentFilter>()))
-                 .ReturnsAsync(new List<IncidentCountByPriority>
-                 {
-                    new IncidentCountByPriority
-                    {
-                        Priority = "High",
-                        IncidentCount = 12
-                    }
-                 });
+                       .ReturnsAsync(fakeData);
 
             var controller = new IncidentController(mockService.Object);
 
+            // Act
             var result = await controller.GetIncidentCountByPriority(request);
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsAssignableFrom<IEnumerable<IncidentCountByPriorityResponse>>(okResult.Value);
 
-            Assert.Single(response);
-            Assert.Equal("High", response.First().Priority);
-            Assert.Equal(12, response.First().IncidentCount);
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<IncidentCountByPriorityGroupedResponse>(okResult.Value);
+
+            Assert.NotEmpty(response.Priority);
+            Assert.True(response.Priority.ContainsKey("P1 - Critical"));
+            var stateCounts = response.Priority["P1 - Critical"].First();
+
+            Assert.Equal(30, stateCounts.TotalCount);
+            Assert.Equal(10, stateCounts.Open);
+            Assert.Equal(20, stateCounts.Closed);
+            Assert.Equal("2 weeks", response.TotalAverageResolvedTime);
         }
 
         [Fact]
@@ -135,51 +189,59 @@ namespace Incident.Tests.Controllers
         [Fact]
         public async Task GetCategoryCountByGroup_ReturnsOk()
         {
-            var request = new DashboardFilterRequest();
             var mockService = new Mock<IIncidentService>();
-
             mockService.Setup(s => s.GetCategoryCountByGroupAsync(It.IsAny<IncidentFilter>()))
-                       .ReturnsAsync(new List<CategoryCountByGroup>
-                       {
-                   new CategoryCountByGroup { CategoryName = "Software", IncidentCount = 10 }
-                       });
+                .ReturnsAsync(new List<CategoryCountByGroup>
+                {
+                    new CategoryCountByGroup { CategoryName = "Hardware", IncidentCount = 10 },
+                    new CategoryCountByGroup { CategoryName = "Software", IncidentCount = 5 }
+                });
 
             var controller = new IncidentController(mockService.Object);
 
-            var result = await controller.GetCategoryCountByGroup(request);
-
+            var result = await controller.GetCategoryCountByGroup(new DashboardFilterRequest());
             var okResult = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsAssignableFrom<IEnumerable<CategoryCountByGroupResponse>>(okResult.Value);
 
-            Assert.Single(response);
-            Assert.Equal("Software", response.First().CategoryName);
-            Assert.Equal(10, response.First().IncidentCount);
+            Assert.Equal(2, response.Count());
+            Assert.Contains(response, r => r.CategoryName == "Hardware");
         }
 
         [Fact]
         public async Task GetStatusCountByPriority_ReturnsOk()
         {
-            var request = new DashboardFilterRequest();
             var mockService = new Mock<IIncidentService>();
-
             mockService.Setup(s => s.GetStatusCountByPriorityAsync(It.IsAny<IncidentFilter>()))
-                       .ReturnsAsync(new List<StatusCountByPriority>
-                       {
-                   new StatusCountByPriority { Priority = "High", Status = "Open", IncidentCount = 3 }
-                       });
+                .ReturnsAsync(new List<StatusCountByPriority>
+                {
+                    new StatusCountByPriority { Status = "Open", IncidentCount = 10 },
+                    new StatusCountByPriority { Status = "Closed", IncidentCount = 5 }
+                });
 
             var controller = new IncidentController(mockService.Object);
 
-            var result = await controller.GetStatusCountByPriority(request);
-
+            var result = await controller.GetStatusCountByPriority(new DashboardFilterRequest());
             var okResult = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsAssignableFrom<IEnumerable<StatusCountByPriorityResponse>>(okResult.Value);
 
-            Assert.Single(response);
-            Assert.Equal("High", response.First().Priority);
-            Assert.Equal("Open", response.First().Status);
-            Assert.Equal(3, response.First().IncidentCount);
+            Assert.Equal(2, response.Count());
+            Assert.Contains(response, r => r.Status == "Open");
         }
+
+        [Fact]
+        public async Task GetStatusCountByPriority_ReturnsNotFound_WhenEmpty()
+        {
+            var mockService = new Mock<IIncidentService>();
+            mockService.Setup(s => s.GetStatusCountByPriorityAsync(It.IsAny<IncidentFilter>()))
+                .ReturnsAsync(new List<StatusCountByPriority>());
+
+            var controller = new IncidentController(mockService.Object);
+
+            var result = await controller.GetStatusCountByPriority(new DashboardFilterRequest());
+
+            Assert.IsType<NotFoundResult>(result);
+        }
+
 
         [Fact]
         public async Task ExportIncidents_ReturnsExcelFile_WithCorrectDTOData()

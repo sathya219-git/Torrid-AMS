@@ -9,6 +9,7 @@ using System.Data;
 using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Incident.Application.Helpers;
 
 namespace Incident.Infrastructure.Repositories
 {
@@ -23,57 +24,94 @@ namespace Incident.Infrastructure.Repositories
             _logger = logger;
         }
 
-        public async Task<IEnumerable<NameAndIncidentCountByPriority>> GetNameAndIncidentCountByPriorityAsync(IncidentFilter filter)
+        public async Task<PagedMemberIncidentStats> GetNameAndIncidentCountByPriorityAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Calling SP 'sp_NameAndIncidentCountByPriority' with parameters: {@Filter}", filter);
-
             using var connection = new SqlConnection(_connectionString);
 
             var parameters = new DynamicParameters();
-            parameters.Add("@p_fromDate", filter.FromDate, DbType.DateTime);
-            parameters.Add("@p_toDate", filter.ToDate, DbType.DateTime);
-            parameters.Add("@p_category", filter.Category, DbType.String);
-            parameters.Add("@p_assignmentGroup", filter.AssignmentGroup, DbType.String);
-            parameters.Add("@p_priority", filter.Priority, DbType.String);
-            parameters.Add("@p_assignedToName", filter.AssignedToName, DbType.String);
-            parameters.Add("@p_state", filter.State, DbType.String);
-            parameters.Add("@p_search", filter.Search, DbType.String); // NEW
-            parameters.Add("@p_pageNumber", filter.PageNumber, DbType.Int32);
-            parameters.Add("@p_pageSize", filter.PageSize, DbType.Int32);
+            parameters.Add("@p_fromDate", filter.FromDate);
+            parameters.Add("@p_toDate", filter.ToDate);
+            parameters.Add("@p_category", filter.Category.ToCsv());
+            parameters.Add("@p_assignmentGroup", filter.AssignmentGroup.ToCsv());
+            parameters.Add("@p_priority", filter.Priority.ToCsv());
+            parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
+            parameters.Add("@p_state", filter.State.ToCsv());
+            parameters.Add("@p_metrics", filter.Metrics ?? "weeks");
+            parameters.Add("@p_pageNumber", filter.PageNumber <= 0 ? 1 : filter.PageNumber);
+            parameters.Add("@p_pageSize", filter.PageSize <= 0 ? 4 : filter.PageSize);
+            parameters.Add("@p_sortBy", string.IsNullOrWhiteSpace(filter.SortBy) ? "Alphabetical" : filter.SortBy);
 
-            try
-            {
-                await connection.OpenAsync();
+            await connection.OpenAsync();
 
-                return await connection.QueryAsync<NameAndIncidentCountByPriority>(
-                    "sp_NameAndIncidentCountByPriority",
-                    parameters,
-                    commandType: CommandType.StoredProcedure
-                );
-            }
-            catch (Exception ex)
+            var results = await connection.QueryAsync<dynamic>(
+                "sp_NameAndIncidentCountByPriority",
+                parameters,
+                commandType: CommandType.StoredProcedure
+            );
+
+            if (!results.Any())
             {
-                _logger.LogError(ex, "Error executing SP 'sp_NameAndIncidentCountByPriority'");
-                throw;
+                return new PagedMemberIncidentStats
+                {
+                    MemberDetails = new List<NameAndIncidentCountByPriority>(),
+                    Pagination = new PaginationInfo
+                    {
+                        Page = filter.PageNumber,
+                        PageSize = filter.PageSize,
+                        TotalRecords = 0,
+                        TotalPages = 0,
+                        SortBy = filter.SortBy ?? "Alphabetical"
+                    }
+                };
             }
+
+            var first = results.First();
+
+            var memberList = results.Select(r => new NameAndIncidentCountByPriority
+            {
+                Name = r.Name,
+                P1 = (int)r.P1,
+                P2 = (int)r.P2,
+                P3 = (int)r.P3,
+                P4 = (int)r.P4,
+                TotalCount = (int)r.TotalCount,   
+                AvgResolvedTime = (string)r.AvgResolvedTime
+            }).ToList();
+
+            var pagination = new PaginationInfo
+            {
+                Page = (int)(first.CurrentPage ?? filter.PageNumber),
+                PageSize = (int)(first.PageSize ?? filter.PageSize),
+                TotalRecords = (int)(first.TotalRecords ?? 0),
+                TotalPages = (int)(first.TotalPages ?? 0),
+                SortBy = (string)(first.SortBy ?? filter.SortBy ?? "Alphabetical")
+            };
+
+            return new PagedMemberIncidentStats
+            {
+                MemberDetails = memberList,
+                Pagination = pagination
+            };
         }
+
+
+
         public async Task<IEnumerable<AssignmentGroup>> GetAssignmentGroupsAsync(IncidentFilter filter)
         {
             _logger.LogInformation("Calling SP 'sp_GetAssignmentGroups' with parameters: {@Filter}", filter);
 
-            using var connection = new SqlConnection(_connectionString);
-
-            var parameters = new DynamicParameters();
-            parameters.Add("@p_fromDate", filter.FromDate, DbType.DateTime);
-            parameters.Add("@p_toDate", filter.ToDate, DbType.DateTime);
-            parameters.Add("@p_category", filter.Category, DbType.String);
-            parameters.Add("@p_priority", filter.Priority, DbType.String);
-            parameters.Add("@p_assignedToName", filter.AssignedToName, DbType.String);
-
             try
             {
-                await connection.OpenAsync();
+                using var connection = new SqlConnection(_connectionString);
+                var parameters = new DynamicParameters();
 
+                parameters.Add("@p_fromDate", filter.FromDate);
+                parameters.Add("@p_toDate", filter.ToDate);
+                parameters.Add("@p_category", filter.Category.ToCsv());
+                parameters.Add("@p_priority", filter.Priority.ToCsv());
+                parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
+
+                await connection.OpenAsync();
                 var result = await connection.QueryAsync<AssignmentGroup>(
                     "sp_GetAssignmentGroups",
                     parameters,
@@ -99,10 +137,10 @@ namespace Incident.Infrastructure.Repositories
                 var parameters = new DynamicParameters();
                 parameters.Add("@p_fromDate", filter.FromDate);
                 parameters.Add("@p_toDate", filter.ToDate);
-                parameters.Add("@p_assignmentGroup", filter.AssignmentGroup);
-                parameters.Add("@p_category", filter.Category);
-                parameters.Add("@p_priority", filter.Priority);
-                parameters.Add("@p_assignedToName", filter.AssignedToName);
+                parameters.Add("@p_assignmentGroup", filter.AssignmentGroup.ToCsv());
+                parameters.Add("@p_category", filter.Category.ToCsv());
+                parameters.Add("@p_priority", filter.Priority.ToCsv());
+                parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
 
                 await connection.OpenAsync();
                 var result = await connection.QueryFirstOrDefaultAsync<DashboardKpi>(
@@ -119,6 +157,7 @@ namespace Incident.Infrastructure.Repositories
                 throw;
             }
         }
+
         public async Task<IEnumerable<StatusCountByPriority>> GetStatusCountByPriorityAsync(IncidentFilter filter)
         {
             _logger.LogInformation("Calling SP 'sp_StatusCountByPriority' with parameters: {@Filter}", filter);
@@ -127,14 +166,16 @@ namespace Incident.Infrastructure.Repositories
             {
                 using var connection = new SqlConnection(_connectionString);
                 var parameters = new DynamicParameters();
+
                 parameters.Add("@p_fromDate", filter.FromDate);
                 parameters.Add("@p_toDate", filter.ToDate);
-                parameters.Add("@p_category", filter.Category);
-                parameters.Add("@p_assignmentGroup", filter.AssignmentGroup);
-                parameters.Add("@p_priority", filter.Priority);
-                parameters.Add("@p_state", filter.State, DbType.String);                            
-                parameters.Add("@p_assignedToName", filter.AssignedToName);
+                parameters.Add("@p_assignmentGroup", filter.AssignmentGroup.ToCsv());
+                parameters.Add("@p_category", filter.Category.ToCsv());
+                parameters.Add("@p_priority", filter.Priority.ToCsv());
+                parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
+                parameters.Add("@p_state", filter.State.ToCsv());
 
+                await connection.OpenAsync();
                 var result = await connection.QueryAsync<StatusCountByPriority>(
                     "sp_StatusCountByPriority",
                     parameters,
@@ -150,19 +191,20 @@ namespace Incident.Infrastructure.Repositories
             }
         }
 
+
         public async Task<IEnumerable<CategoryCountByGroup>> GetCategoryCountByGroupAsync(IncidentFilter filter)
         {
             _logger.LogInformation("Calling SP 'sp_GetCategoryCountByGroup' with parameters: {@Filter}", filter);
 
-            using var connection = new SqlConnection(_connectionString);
-
-            var parameters = new DynamicParameters();
-            parameters.Add("@p_fromDate", filter.FromDate);
-            parameters.Add("@p_toDate", filter.ToDate);
-            parameters.Add("@p_assignmentGroup", filter.AssignmentGroup);
-
             try
             {
+                using var connection = new SqlConnection(_connectionString);
+                var parameters = new DynamicParameters();
+
+                parameters.Add("@p_fromDate", filter.FromDate);
+                parameters.Add("@p_toDate", filter.ToDate);
+                parameters.Add("@p_assignmentGroup", filter.AssignmentGroup.ToCsv());
+
                 await connection.OpenAsync();
 
                 var result = await connection.QueryAsync<CategoryCountByGroup>(
@@ -184,21 +226,21 @@ namespace Incident.Infrastructure.Repositories
         {
             _logger.LogInformation("Calling SP 'sp_IncidentCountByPriority' with parameters: {@Filter}", filter);
 
-            using var connection = new SqlConnection(_connectionString);
-
-            var parameters = new DynamicParameters();
-            parameters.Add("@p_fromDate", filter.FromDate, DbType.DateTime);
-            parameters.Add("@p_toDate", filter.ToDate, DbType.DateTime);
-            parameters.Add("@p_category", filter.Category, DbType.String);
-            parameters.Add("@p_assignmentGroup", filter.AssignmentGroup, DbType.String);
-            parameters.Add("@p_priority", filter.Priority, DbType.String);
-            parameters.Add("@p_state", filter.State, DbType.String);                        
-            parameters.Add("@p_assignedToName", filter.AssignedToName, DbType.String);
-
             try
             {
-                await connection.OpenAsync();
+                using var connection = new SqlConnection(_connectionString);
+                var parameters = new DynamicParameters();
 
+                parameters.Add("@p_fromDate", filter.FromDate);
+                parameters.Add("@p_toDate", filter.ToDate);
+                parameters.Add("@p_assignmentGroup", filter.AssignmentGroup.ToCsv());
+                parameters.Add("@p_category", filter.Category.ToCsv());
+                parameters.Add("@p_priority", filter.Priority.ToCsv());
+                parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
+                parameters.Add("@p_state", filter.State.ToCsv());
+                parameters.Add("@p_metrics", filter.Metrics ?? "weeks");
+
+                await connection.OpenAsync();
                 var result = await connection.QueryAsync<IncidentCountByPriority>(
                     "sp_IncidentCountByPriority",
                     parameters,
@@ -258,13 +300,13 @@ namespace Incident.Infrastructure.Repositories
             using var connection = new SqlConnection(_connectionString);
 
             var parameters = new DynamicParameters();
-            parameters.Add("@p_fromDate", filter.FromDate, DbType.DateTime);
-            parameters.Add("@p_toDate", filter.ToDate, DbType.DateTime);
-            parameters.Add("@p_category", filter.Category, DbType.String);
-            parameters.Add("@p_assignmentGroup", filter.AssignmentGroup, DbType.String);
-            parameters.Add("@p_priority", filter.Priority, DbType.String);
-            parameters.Add("@p_assignedToName", filter.AssignedToName, DbType.String);
-            parameters.Add("@p_state", filter.State, DbType.String);
+            parameters.Add("@p_fromDate", filter.FromDate);
+            parameters.Add("@p_toDate", filter.ToDate);
+            parameters.Add("@p_assignmentGroup", filter.AssignmentGroup.ToCsv());
+            parameters.Add("@p_category", filter.Category.ToCsv());
+            parameters.Add("@p_priority", filter.Priority.ToCsv());
+            parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
+            parameters.Add("@p_state", filter.State.ToCsv());
 
             try
             {

@@ -4,11 +4,12 @@ namespace Incident.Application.Models
     {
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
-        public string? Category { get; set; }
-        public string? AssignmentGroup { get; set; }
-        public string? Priority { get; set; }
-        public string? AssignedToName { get; set; }
-        public string? State { get; set; }
+        public List<string>? AssignmentGroup { get; set; }
+        public List<string>? Category { get; set; }
+        public List<string>? Priority { get; set; }
+        public List<string>? AssignedToName { get; set; }
+        public List<string>? State { get; set; }
+        public string? Metrics { get; set; }  
         public string? Search { get; set; }  
         public string? SortBy { get; set; } 
         public string? SortOrder { get; set; } 

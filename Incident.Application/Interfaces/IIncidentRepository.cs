@@ -8,7 +8,7 @@ namespace Incident.Application.Interfaces
 {
     public interface IIncidentRepository
     {
-        Task<IEnumerable<NameAndIncidentCountByPriority>> GetNameAndIncidentCountByPriorityAsync(IncidentFilter filter);
+        Task<PagedMemberIncidentStats> GetNameAndIncidentCountByPriorityAsync(IncidentFilter filter);
         Task<IEnumerable<AssignmentGroup>> GetAssignmentGroupsAsync(IncidentFilter filter);
         Task<DashboardKpi?> GetDashboardKpisAsync(IncidentFilter filter);
         Task<IEnumerable<StatusCountByPriority>> GetStatusCountByPriorityAsync(IncidentFilter filter);

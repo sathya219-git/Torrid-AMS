@@ -41,137 +41,167 @@ namespace Incident.Tests.Services
 
 
         [Fact]
-        public async Task GetNameAndIncidentCountByPriorityAsync_ReturnsData()
+        public async Task GetNameAndIncidentCountByPriorityAsync_ReturnsPagedData()
         {
-            var filter = new IncidentFilter { PageNumber = 1, PageSize = 4, Search = "John" };
+            // Arrange
+            var filter = new IncidentFilter 
+            { 
+                PageNumber = 1, 
+                PageSize = 4, 
+                AssignedToName = new List<string> { "John" } // ✅ FIXED: list instead of string
+            };
+
+            var pagedData = new PagedMemberIncidentStats
+            {
+                MemberDetails = new List<NameAndIncidentCountByPriority>
+                {
+                    new NameAndIncidentCountByPriority
+                    {
+                        Name = "John",
+                        P1 = 5,
+                        P2 = 3,
+                        P3 = 1,
+                        P4 = 0,
+                        AvgResolvedTime = "4h"
+                    }
+                },
+                Pagination = new PaginationInfo
+                {
+                    Page = 1,
+                    PageSize = 4,
+                    TotalRecords = 1,
+                    TotalPages = 1,
+                    SortBy = "Alphabetical"
+                }
+            };
 
             var mockRepo = new Mock<IIncidentRepository>();
-            mockRepo.Setup(r => r.GetNameAndIncidentCountByPriorityAsync(filter))
-                    .ReturnsAsync(new List<NameAndIncidentCountByPriority>
-                    {
-                new NameAndIncidentCountByPriority { AssignedToName = "John", Priority = "High", IncidentCount = 10, AvgResolutionTime_Hours = 5.2, TotalCount = 40 }
-                    });
+            mockRepo.Setup(r => r.GetNameAndIncidentCountByPriorityAsync(It.IsAny<IncidentFilter>()))
+                    .ReturnsAsync(pagedData);
 
             var mockLogger = new Mock<ILogger<IncidentService>>();
             var service = new IncidentService(mockRepo.Object, mockLogger.Object);
 
+            // Act
             var result = await service.GetNameAndIncidentCountByPriorityAsync(filter);
 
-            Assert.Single(result);
-            Assert.Equal("John", result.First().AssignedToName);
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result.MemberDetails);
+            Assert.Equal("John", result.MemberDetails.First().Name);
+            Assert.Equal(1, result.Pagination.TotalRecords);
         }
+
 
         [Fact]
         public async Task GetAssignmentGroupsAsync_ReturnsData()
         {
             var filter = new IncidentFilter();
+
             var mockRepo = new Mock<IIncidentRepository>();
             mockRepo.Setup(r => r.GetAssignmentGroupsAsync(filter))
-                    .ReturnsAsync(new List<AssignmentGroup>
-                    {
-                new AssignmentGroup { AssignmentGroupName = "IT Support" },
-                new AssignmentGroup { AssignmentGroupName = "Network Team" }
-                    });
+                .ReturnsAsync(new List<AssignmentGroup>
+                {
+                    new AssignmentGroup { AssignmentGroupName = "Network Team" },
+                    new AssignmentGroup { AssignmentGroupName = "DBA Team" }
+                });
 
             var mockLogger = new Mock<ILogger<IncidentService>>();
             var service = new IncidentService(mockRepo.Object, mockLogger.Object);
 
             var result = await service.GetAssignmentGroupsAsync(filter);
 
+            Assert.NotNull(result);
             Assert.Equal(2, result.Count());
-            Assert.Contains(result, r => r.AssignmentGroupName == "IT Support");
+            Assert.Contains(result, r => r.AssignmentGroupName == "Network Team");
         }
 
         [Fact]
         public async Task GetIncidentCountByPriorityAsync_ReturnsData()
         {
-            var filter = new IncidentFilter();
+            // Arrange
+            var filter = new IncidentFilter { Metrics = "weeks" };
+
             var mockRepo = new Mock<IIncidentRepository>();
             mockRepo.Setup(r => r.GetIncidentCountByPriorityAsync(filter))
                     .ReturnsAsync(new List<IncidentCountByPriority>
                     {
                         new IncidentCountByPriority
                         {
-                            Priority = "High",
-                            IncidentCount = 12
+                            Priority = "P1 - Critical",
+                            State = "Open",
+                            IncidentCount = 10,
+                            TotalCount = 30,
+                            TotalAverageResolvedTime = "2 weeks"
                         },
                         new IncidentCountByPriority
                         {
-                            Priority = "Low",
-                            IncidentCount = 05
+                            Priority = "P1 - Critical",
+                            State = "Closed",
+                            IncidentCount = 20,
+                            TotalCount = 30,
+                            TotalAverageResolvedTime = "2 weeks"
                         }
                     });
 
             var mockLogger = new Mock<ILogger<IncidentService>>();
             var service = new IncidentService(mockRepo.Object, mockLogger.Object);
 
+            // Act
             var result = await service.GetIncidentCountByPriorityAsync(filter);
+
+            // Assert
+            Assert.NotNull(result);
             Assert.Equal(2, result.Count());
-            Assert.Contains(result, r => r.Priority == "High" && r.IncidentCount == 12);
+            Assert.Equal("P1 - Critical", result.First().Priority);
+            Assert.Equal(30, result.First().TotalCount);
+            Assert.Equal("2 weeks", result.First().TotalAverageResolvedTime);
         }
-
-
-        [Fact]
-        public async Task GetIncidentDetailsByPriorityAsync_ReturnsData()
-        {
-            var filter = new IncidentFilter { PageNumber = 1, PageSize = 8, Search = "INC001" };
-
-            var mockRepo = new Mock<IIncidentRepository>();
-            mockRepo.Setup(r => r.GetIncidentDetailsByPriorityAsync(filter))
-                    .ReturnsAsync(new List<IncidentDetailsByPriority>
-                    {
-                new IncidentDetailsByPriority { IncidentNumber = "INC001", Description = "Test Incident", TotalCount = 50 }
-                    });
-
-            var mockLogger = new Mock<ILogger<IncidentService>>();
-            var service = new IncidentService(mockRepo.Object, mockLogger.Object);
-
-            var result = await service.GetIncidentDetailsByPriorityAsync(filter);
-
-            Assert.Single(result);
-            Assert.Equal("INC001", result.First().IncidentNumber);
-        }
-        
+            
         [Fact]
         public async Task GetCategoryCountByGroupAsync_ReturnsData()
         {
             var filter = new IncidentFilter();
+
             var mockRepo = new Mock<IIncidentRepository>();
             mockRepo.Setup(r => r.GetCategoryCountByGroupAsync(filter))
-                    .ReturnsAsync(new List<CategoryCountByGroup>
-                    {
-                new CategoryCountByGroup { CategoryName = "Software", IncidentCount = 10 },
-                new CategoryCountByGroup { CategoryName = "Hardware", IncidentCount = 5 }
-                    });
+                .ReturnsAsync(new List<CategoryCountByGroup>
+                {
+                    new CategoryCountByGroup { CategoryName = "Hardware", IncidentCount = 10 },
+                    new CategoryCountByGroup { CategoryName = "Software", IncidentCount = 5 }
+                });
 
             var mockLogger = new Mock<ILogger<IncidentService>>();
             var service = new IncidentService(mockRepo.Object, mockLogger.Object);
 
             var result = await service.GetCategoryCountByGroupAsync(filter);
 
+            Assert.NotNull(result);
             Assert.Equal(2, result.Count());
-            Assert.Contains(result, r => r.CategoryName == "Software" && r.IncidentCount == 10);
+            Assert.Contains(result, r => r.CategoryName == "Hardware");
         }
 
         [Fact]
         public async Task GetStatusCountByPriorityAsync_ReturnsData()
         {
             var filter = new IncidentFilter();
+
             var mockRepo = new Mock<IIncidentRepository>();
             mockRepo.Setup(r => r.GetStatusCountByPriorityAsync(filter))
-                    .ReturnsAsync(new List<StatusCountByPriority>
-                    {
-                new StatusCountByPriority { Priority = "High", Status = "Open", IncidentCount = 3 },
-                new StatusCountByPriority { Priority = "Low", Status = "Closed", IncidentCount = 2 }
-                    });
+                .ReturnsAsync(new List<StatusCountByPriority>
+                {
+                    new StatusCountByPriority { Status = "Open", IncidentCount = 10 },
+                    new StatusCountByPriority { Status = "Closed", IncidentCount = 5 }
+                });
 
             var mockLogger = new Mock<ILogger<IncidentService>>();
             var service = new IncidentService(mockRepo.Object, mockLogger.Object);
 
             var result = await service.GetStatusCountByPriorityAsync(filter);
 
+            Assert.NotNull(result);
             Assert.Equal(2, result.Count());
-            Assert.Contains(result, r => r.Priority == "High" && r.Status == "Open");
+            Assert.Contains(result, r => r.Status == "Open");
         }
 
         [Fact]

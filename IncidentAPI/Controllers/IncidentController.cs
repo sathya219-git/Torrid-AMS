@@ -41,11 +41,8 @@ namespace IncidentAPI.Controllers
             var response = new DashboardKpiResponse
             {
                 TotalIncidents = result.TotalIncidents,
-                NewIncidents = result.NewIncidents,
                 OpenIncidents = result.OpenIncidents,
                 InProgressIncidents = result.InProgressIncidents,
-                OnHoldIncidents = result.OnHoldIncidents,
-                ResolvedIncidents = result.ResolvedIncidents,
                 ClosedIncidents = result.ClosedIncidents
             };
 
@@ -59,41 +56,47 @@ namespace IncidentAPI.Controllers
             {
                 FromDate = request.FromDate,
                 ToDate = request.ToDate,
-                Category = request.Category,
                 AssignmentGroup = request.AssignmentGroup,
+                Category = request.Category,
                 Priority = request.Priority,
                 AssignedToName = request.AssignedToName,
                 State = request.State,
-                Search = request.Search,
+                Metrics = request.Metrics,
                 PageNumber = request.PageNumber,
-                PageSize = request.PageSize
+                PageSize = request.PageSize,
+                SortBy = request.SortBy
             };
 
             var result = await _incidentService.GetNameAndIncidentCountByPriorityAsync(filter);
 
-            if (!result.Any())
-                return Ok(new PaginatedResponse<NameAndIncidentCountByPriorityResponse>
-                {
-                    Data = new List<NameAndIncidentCountByPriorityResponse>(),
-                    TotalCount = 0
-                });
+            if (result == null || !result.MemberDetails.Any())
+                return NotFound("No data found for given filters.");
 
-            var totalCount = result.First().TotalCount;
-
-            var response = new PaginatedResponse<NameAndIncidentCountByPriorityResponse>
+            var response = new MemberIncidentStatsResponse
             {
-                Data = result.Select(d => new NameAndIncidentCountByPriorityResponse
+                MemberDetails = result.MemberDetails.Select(x => new NameAndIncidentCountByPriorityResponse
                 {
-                    AssignedToName = d.AssignedToName,
-                    Priority = d.Priority,
-                    IncidentCount = d.IncidentCount,
-                    AvgResolutionTime_Hours = d.AvgResolutionTime_Hours
+                    Name = x.Name,
+                    P1 = x.P1,
+                    P2 = x.P2,
+                    P3 = x.P3,
+                    P4 = x.P4,
+                    TotalCount = x.TotalCount,   
+                    AvgResolvedTime = x.AvgResolvedTime
                 }),
-                TotalCount = totalCount
+                Pagination = new PaginationResponse
+                {
+                    Page = result.Pagination.Page,
+                    PageSize = result.Pagination.PageSize,
+                    TotalRecords = result.Pagination.TotalRecords,
+                    TotalPages = result.Pagination.TotalPages,
+                    SortBy = result.Pagination.SortBy
+                }
             };
 
             return Ok(response);
         }
+
 
         [HttpGet("assignmentgroups")]
         public async Task<IActionResult> GetAssignmentGroups([FromQuery] DashboardFilterRequest request)
@@ -107,11 +110,14 @@ namespace IncidentAPI.Controllers
                 AssignedToName = request.AssignedToName
             };
 
-            var domainResult = await _incidentService.GetAssignmentGroupsAsync(filter);
+            var result = await _incidentService.GetAssignmentGroupsAsync(filter);
 
-            var response = domainResult.Select(d => new AssignmentGroupResponse
+            if (result == null || !result.Any())
+                return NotFound();
+
+            var response = result.Select(r => new AssignmentGroupResponse
             {
-                AssignmentGroupName = d.AssignmentGroupName
+                AssignmentGroupName = r.AssignmentGroupName
             });
 
             return Ok(response);
@@ -127,16 +133,19 @@ namespace IncidentAPI.Controllers
                 AssignmentGroup = request.AssignmentGroup,
                 Category = request.Category,
                 Priority = request.Priority,
-                State = request.State,
-                AssignedToName = request.AssignedToName
+                AssignedToName = request.AssignedToName,
+                State = request.State
             };
 
             var result = await _incidentService.GetStatusCountByPriorityAsync(filter);
-            var response = result.Select(d => new StatusCountByPriorityResponse
+
+            if (result == null || !result.Any())
+                return NotFound();
+
+            var response = result.Select(r => new StatusCountByPriorityResponse
             {
-                Priority = d.Priority,
-                Status = d.Status,
-                IncidentCount = d.IncidentCount
+                Status = r.Status,
+                IncidentCount = r.IncidentCount
             });
 
             return Ok(response);
@@ -152,12 +161,15 @@ namespace IncidentAPI.Controllers
                 AssignmentGroup = request.AssignmentGroup
             };
 
-            var domainResult = await _incidentService.GetCategoryCountByGroupAsync(filter);
+            var result = await _incidentService.GetCategoryCountByGroupAsync(filter);
 
-            var response = domainResult.Select(d => new CategoryCountByGroupResponse
+            if (result == null || !result.Any())
+                return NotFound();
+
+            var response = result.Select(r => new CategoryCountByGroupResponse
             {
-                CategoryName = d.CategoryName,
-                IncidentCount = d.IncidentCount
+                CategoryName = r.CategoryName,
+                IncidentCount = r.IncidentCount
             });
 
             return Ok(response);
@@ -173,40 +185,40 @@ namespace IncidentAPI.Controllers
                 AssignmentGroup = request.AssignmentGroup,
                 Category = request.Category,
                 Priority = request.Priority,
+                AssignedToName = request.AssignedToName,
                 State = request.State,
-                AssignedToName = request.AssignedToName
+                Metrics = request.Metrics
             };
 
-            if (filter.FromDate.HasValue && filter.ToDate.HasValue && filter.FromDate > filter.ToDate)
-                return BadRequest("FromDate cannot be later than ToDate.");
+            var result = await _incidentService.GetIncidentCountByPriorityAsync(filter);
 
-            var allowedPriorities = new List<string> { "1 - Critical", "2 - High", "3 - Moderate", "4 - Low" };
-            if (!string.IsNullOrEmpty(filter.Priority) && !allowedPriorities.Contains(filter.Priority))
-                return BadRequest("Invalid priority value.");
+            if (result == null || !result.Any())
+                return NotFound();
 
-            try
+            var response = new IncidentCountByPriorityGroupedResponse();
+
+            foreach (var group in result.GroupBy(r => r.Priority))
             {
-                var result = await _incidentService.GetIncidentCountByPriorityAsync(filter);
+                var first = group.First();
 
-                if (result == null || !result.Any())
+                var stateCount = new IncidentStateCount
                 {
-                    return NotFound("No incidents found for the given criteria.");
-                }
+                    TotalCount = first.TotalCount,
+                    Open = group.FirstOrDefault(g => g.State.Equals("Open", StringComparison.OrdinalIgnoreCase))?.IncidentCount ?? 0,
+                    InProgress = group.FirstOrDefault(g => g.State.Equals("In Progress", StringComparison.OrdinalIgnoreCase))?.IncidentCount ?? 0,
+                    Closed = group.FirstOrDefault(g => g.State.Equals("Closed", StringComparison.OrdinalIgnoreCase))?.IncidentCount ?? 0,
+                    OnHold = group.FirstOrDefault(g => g.State.Equals("On Hold", StringComparison.OrdinalIgnoreCase))?.IncidentCount ?? 0,
+                    Reopen = group.FirstOrDefault(g => g.State.Equals("Reopen", StringComparison.OrdinalIgnoreCase))?.IncidentCount ?? 0,
+                    Resolved = group.FirstOrDefault(g => g.State.Equals("Resolved", StringComparison.OrdinalIgnoreCase))?.IncidentCount ?? 0
+                };
 
-                var response = result.Select(d => new IncidentCountByPriorityResponse
-                {
-                    Priority = d.Priority,
-                    IncidentCount = d.IncidentCount,
-                    AvgResolutionTime_Hours = d.AvgResolutionTime_Hours
-                });
+                response.Priority[group.Key] = new List<IncidentStateCount> { stateCount };
+                response.TotalAverageResolvedTime = first.TotalAverageResolvedTime;
+            }
 
-                return Ok(response);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "An error occurred while processing your request.");
-            }
+            return Ok(response);
         }
+
 
         [HttpGet("detailsbypriority")]
         public async Task<IActionResult> GetIncidentDetailsByPriority([FromQuery] DashboardFilterPaginatedRequest request)
@@ -268,12 +280,12 @@ namespace IncidentAPI.Controllers
         [HttpGet("export")]
         public async Task<IActionResult> ExportIncidents([FromQuery] DashboardFilterRequest request)
         {
-            var filter = new IncidentFilter
+             var filter = new IncidentFilter
             {
                 FromDate = request.FromDate,
                 ToDate = request.ToDate,
-                Category = request.Category,
                 AssignmentGroup = request.AssignmentGroup,
+                Category = request.Category,
                 Priority = request.Priority,
                 AssignedToName = request.AssignedToName,
                 State = request.State
@@ -281,29 +293,29 @@ namespace IncidentAPI.Controllers
 
             var incidents = await _incidentService.ExportIncidentsAsync(filter);
 
-            var responseDto = incidents.Select(i => new ExportIncidentResponse
+            var responseDto = incidents.Select(r => new ExportIncidentResponse
             {
-                Number = i.Number,
-                Opened = i.Opened,
-                ShortDescription = i.ShortDescription,
-                Caller = i.Caller,
-                Priority = i.Priority,
-                State = i.State,
-                Category = i.Category,
-                AssignmentGroup = i.AssignmentGroup,
-                AssignedTo = i.AssignedTo,
-                Updated = i.Updated,
-                UpdatedBy = i.UpdatedBy,
-                ChildIncidents = i.ChildIncidents,
-                SLADue = i.SLADue,
-                Severity = i.Severity,
-                Subcategory = i.Subcategory,
-                ResolutionNotes = i.ResolutionNotes,
-                Resolved = i.Resolved,
-                SLACalculation = i.SLACalculation,
-                ParentIncident = i.ParentIncident,
-                Parent = i.Parent,
-                TaskType = i.TaskType
+                Number = r.Number,
+                Opened = r.Opened,
+                ShortDescription = r.ShortDescription,
+                Caller = r.Caller,
+                Priority = r.Priority,
+                State = r.State,
+                Category = r.Category,
+                AssignmentGroup = r.AssignmentGroup,
+                AssignedTo = r.AssignedTo,
+                Updated = r.Updated,
+                UpdatedBy = r.UpdatedBy,
+                ChildIncidents = r.ChildIncidents,
+                SlaDue = r.SlaDue,
+                Severity = r.Severity,
+                Subcategory = r.Subcategory,
+                ResolutionNotes = r.ResolutionNotes,
+                Resolved = r.Resolved,
+                SlaCalculation = r.SlaCalculation,
+                ParentIncident = r.ParentIncident,
+                Parent = r.Parent,
+                TaskType = r.TaskType
             });
 
             using var workbook = new ClosedXML.Excel.XLWorkbook();

@@ -19,7 +19,7 @@ namespace Incident.Application.Services
             _logger = logger;
         }
 
-        public async Task<IEnumerable<NameAndIncidentCountByPriority>> GetNameAndIncidentCountByPriorityAsync(IncidentFilter filter)
+        public async Task<PagedMemberIncidentStats> GetNameAndIncidentCountByPriorityAsync(IncidentFilter filter)
         {
             _logger.LogInformation("Fetching NameAndIncidentCountByPriority with filter: {@Filter}", filter);
             var result = await _incidentRepository.GetNameAndIncidentCountByPriorityAsync(filter);
@@ -36,24 +36,14 @@ namespace Incident.Application.Services
         public async Task<DashboardKpi?> GetDashboardKpisAsync(IncidentFilter filter)
         {
             _logger.LogInformation("Fetching dashboard KPIs with filter: {@Filter}", filter);
-            try
-            {
                 var result = await _incidentRepository.GetDashboardKpisAsync(filter);
-
                 if (result == null)
                     _logger.LogWarning("No dashboard KPIs found for filter: {@Filter}", filter);
-
                 return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching dashboard KPIs");
-                throw;
-            }
         }
         public async Task<IEnumerable<StatusCountByPriority>> GetStatusCountByPriorityAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Fetching status count by priority");
+            _logger.LogInformation("Fetching status count by priority with filter: {@Filter}", filter);
             return await _incidentRepository.GetStatusCountByPriorityAsync(filter);
         }
 
@@ -62,9 +52,10 @@ namespace Incident.Application.Services
             _logger.LogInformation("Fetching category count by group");
             return await _incidentRepository.GetCategoryCountByGroupAsync(filter);
         }
+
         public async Task<IEnumerable<IncidentCountByPriority>> GetIncidentCountByPriorityAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Fetching incident count by priority");
+            _logger.LogInformation("Fetching incident count by priority with filter: {@Filter}", filter);
             return await _incidentRepository.GetIncidentCountByPriorityAsync(filter);
         }
 
