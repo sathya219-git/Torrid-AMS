@@ -19,7 +19,7 @@ namespace Incident.Tests.Controllers
         public async Task Login_ReturnsOk_WithUser()
         {
             var mockService = new Mock<IAuthService>();
-            mockService.Setup(s => s.LoginAsync("john", "password"))
+            mockService.Setup(s => s.LoginAsync("john@example.com", "password"))
                        .ReturnsAsync(new User
                        {
                            UserID = 1,
@@ -31,7 +31,7 @@ namespace Incident.Tests.Controllers
 
             var controller = new AuthController(mockService.Object);
 
-            var request = new LoginRequest { Username = "john", Password = "password" };
+            var request = new LoginRequest { Email = "john@example.com", Password = "password" };
 
             var result = await controller.Login(request);
 

@@ -16,11 +16,11 @@ namespace Incident.Application.Services
             _logger = logger;
         }
 
-        public async Task<User?> LoginAsync(string username, string password)
+        public async Task<User?> LoginAsync(string Email, string password)
         {
-            _logger.LogInformation("Service: login attempt for {Username}", username);
+            _logger.LogInformation("Service: login attempt for {Email}", Email);
 
-            var user = await _authRepository.LoginAsync(username, password);
+            var user = await _authRepository.LoginAsync(Email, password);
 
             return user;
         }

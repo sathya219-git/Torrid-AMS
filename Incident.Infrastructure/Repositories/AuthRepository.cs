@@ -20,13 +20,13 @@ namespace Incident.Infrastructure.Repositories
             _logger = logger;
         }
 
-        public async Task<User?> LoginAsync(string username, string password)
+        public async Task<User?> LoginAsync(string Email, string password)
         {
-            _logger.LogInformation("Attempting login for user {Username}", username);
+            _logger.LogInformation("Attempting login for user {Email}", Email);
             using var connection = new SqlConnection(_connectionString);
             
             var parameters = new DynamicParameters();
-            parameters.Add("@Username", username);
+            parameters.Add("@Email", Email);
             parameters.Add("@Password", password);
 
             try
