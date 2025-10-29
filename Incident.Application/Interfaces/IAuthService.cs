@@ -5,6 +5,6 @@ namespace Incident.Application.Interfaces
 {
     public interface IAuthService
     {
-        Task<User?> LoginAsync(string username, string password);
+        Task<User?> LoginAsync(string Email, string password);
     }
 }

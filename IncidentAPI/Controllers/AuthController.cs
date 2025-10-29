@@ -19,7 +19,7 @@ namespace Incident.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var result = await _authService.LoginAsync(request.Username, request.Password);
+            var result = await _authService.LoginAsync(request.Email, request.Password);
 
             if (result != null)
             {
