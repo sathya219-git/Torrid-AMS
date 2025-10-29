@@ -163,27 +163,45 @@ namespace Incident.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetIncidentDetailsByPriority_ReturnsPaginatedResponse()
+        public async Task GetIncidentDetailsByPriority_ReturnsPagedResponse()
         {
-            var request = new DashboardFilterPaginatedRequest { PageNumber = 1, PageSize = 8, Search = "INC001" };
+            // Arrange
+            var request = new DashboardFilterPaginatedRequest 
+            { 
+                PageNumber = 1, 
+                PageSize = 8, 
+                Search = "INC2233985" 
+            };
+
+            var mockData = new List<IncidentDetailsByPriority>
+            {
+                new IncidentDetailsByPriority
+                {
+                    IncidentNo = "INC2233985",
+                    Description = "Database outage",
+                    Category = "Infra",
+                    ResolvedDateTime = DateTime.Now,
+                    TotalElements = 10
+                }
+            };
 
             var mockService = new Mock<IIncidentService>();
             mockService.Setup(s => s.GetIncidentDetailsByPriorityAsync(It.IsAny<IncidentFilter>()))
-                       .ReturnsAsync(new List<IncidentDetailsByPriority>
-                       {
-                   new IncidentDetailsByPriority { IncidentNumber = "INC001", Description = "Test Incident", TotalCount = 50 }
-                       });
+                    .ReturnsAsync(mockData);
 
             var controller = new IncidentController(mockService.Object);
 
+            // Act
             var result = await controller.GetIncidentDetailsByPriority(request);
 
+            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<PaginatedResponse<IncidentDetailsByPriorityResponse>>(okResult.Value);
+            var response = Assert.IsType<IncidentDetailsByPriorityPagedResponse>(okResult.Value);
 
-            Assert.Single(response.Data);
-            Assert.Equal(50, response.TotalCount);
-            Assert.Equal("INC001", response.Data.First().IncidentNumber);
+            Assert.Equal(10, response.TotalElements);
+            Assert.Single(response.Incidents);
+            Assert.Equal("INC2233985", response.Incidents.First().IncidentNo);
+            Assert.Equal("Infra", response.Incidents.First().Category);
         }
 
         [Fact]
@@ -239,7 +257,7 @@ namespace Incident.Tests.Controllers
 
             var result = await controller.GetStatusCountByPriority(new DashboardFilterRequest());
 
-            Assert.IsType<NotFoundResult>(result);
+            Assert.IsType<OkObjectResult>(result);
         }
 
 

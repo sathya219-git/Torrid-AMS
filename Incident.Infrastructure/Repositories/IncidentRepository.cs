@@ -94,8 +94,6 @@ namespace Incident.Infrastructure.Repositories
             };
         }
 
-
-
         public async Task<IEnumerable<AssignmentGroup>> GetAssignmentGroupsAsync(IncidentFilter filter)
         {
             _logger.LogInformation("Calling SP 'sp_GetAssignmentGroups' with parameters: {@Filter}", filter);
@@ -258,40 +256,43 @@ namespace Incident.Infrastructure.Repositories
 
         public async Task<IEnumerable<IncidentDetailsByPriority>> GetIncidentDetailsByPriorityAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Executing SP 'sp_GetIncidentDetailsByPriority' with parameters: {@Filter}", filter);
+            _logger.LogInformation("Executing stored procedure 'sp_GetIncidentDetailsByPriority' with parameters: {@Filter}", filter);
 
             using var connection = new SqlConnection(_connectionString);
 
             var parameters = new DynamicParameters();
-            parameters.Add("@p_fromDate", filter.FromDate, DbType.DateTime);
-            parameters.Add("@p_toDate", filter.ToDate, DbType.DateTime);
-            parameters.Add("@p_category", filter.Category, DbType.String);
-            parameters.Add("@p_assignmentGroup", filter.AssignmentGroup, DbType.String);
-            parameters.Add("@p_priority", filter.Priority, DbType.String);
-            parameters.Add("@p_assignedToName", filter.AssignedToName, DbType.String);
-            parameters.Add("@p_state", filter.State, DbType.String);
-            parameters.Add("@p_search", filter.Search, DbType.String);
-            parameters.Add("@p_sortBy", filter.SortBy, DbType.String);
-            parameters.Add("@p_sortOrder", filter.SortOrder, DbType.String);
-            parameters.Add("@p_pageNumber", filter.PageNumber, DbType.Int32);
-            parameters.Add("@p_pageSize", filter.PageSize, DbType.Int32);
+            parameters.Add("@p_fromDate", filter.FromDate);
+            parameters.Add("@p_toDate", filter.ToDate);
+            parameters.Add("@p_category", filter.Category.ToCsv());
+            parameters.Add("@p_assignmentGroup", filter.AssignmentGroup.ToCsv());
+            parameters.Add("@p_priority", filter.Priority.ToCsv());
+            parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
+            parameters.Add("@p_state", filter.State.ToCsv());
+            parameters.Add("@p_search", filter.Search);
+            parameters.Add("@p_sortBy", filter.SortBy ?? "Updated");
+            parameters.Add("@p_sortOrder", filter.SortOrder ?? "DESC");
+            parameters.Add("@p_pageNumber", filter.PageNumber);
+            parameters.Add("@p_pageSize", filter.PageSize);
 
             try
             {
                 await connection.OpenAsync();
 
-                return await connection.QueryAsync<IncidentDetailsByPriority>(
+                var result = await connection.QueryAsync<IncidentDetailsByPriority>(
                     "sp_GetIncidentDetailsByPriority",
                     parameters,
                     commandType: CommandType.StoredProcedure
                 );
+
+                return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error executing SP 'sp_GetIncidentDetailsByPriority'");
+                _logger.LogError(ex, "Error executing stored procedure 'sp_GetIncidentDetailsByPriority'");
                 throw;
             }
         }
+    
         
         public async Task<IEnumerable<ExportIncident>> ExportIncidentsAsync(IncidentFilter filter)
         {

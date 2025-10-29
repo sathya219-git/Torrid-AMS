@@ -224,6 +224,47 @@ namespace Incident.Tests.Services
             Assert.Single(result);
             Assert.Contains(result, r => r.Number == "INC001" && r.Priority == "High" && r.State == "Open");
         }
+        
+        [Fact]
+        public async Task GetIncidentDetailsByPriorityAsync_ReturnsFilteredResults()
+        {
+            // Arrange
+            var filter = new IncidentFilter 
+            { 
+                PageNumber = 1, 
+                PageSize = 8, 
+                Search = "INC2233985" 
+            };
+
+            var mockData = new List<IncidentDetailsByPriority>
+            {
+                new IncidentDetailsByPriority
+                {
+                    IncidentNo = "INC2233985",
+                    Description = "Database outage",
+                    Category = "Infra",
+                    ResolvedDateTime = DateTime.Now,
+                    TotalElements = 10
+                }
+            };
+
+            var mockRepo = new Mock<IIncidentRepository>();
+            mockRepo.Setup(r => r.GetIncidentDetailsByPriorityAsync(It.IsAny<IncidentFilter>()))
+                    .ReturnsAsync(mockData);
+
+            var mockLogger = new Mock<ILogger<IncidentService>>();
+            var service = new IncidentService(mockRepo.Object, mockLogger.Object);
+
+            // Act
+            var result = await service.GetIncidentDetailsByPriorityAsync(filter);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+            Assert.Equal("INC2233985", result.First().IncidentNo);
+            Assert.Equal("Infra", result.First().Category);
+            Assert.Equal(10, result.First().TotalElements);
+        }
 
     }
 }

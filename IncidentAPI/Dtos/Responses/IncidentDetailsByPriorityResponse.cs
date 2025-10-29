@@ -1,23 +1,22 @@
 namespace Incident.API.Dtos.Responses
 {
-    public class IncidentDetailsByPriorityResponse
+    public class IncidentDetailsByPriorityItemResponse
     {
-       public string IncidentNumber { get; set; } = string.Empty;
-        public DateTime? OpenedDate { get; set; }
+        public string IncidentNo { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string CallerName { get; set; } = string.Empty;
-        public string PriorityLevel { get; set; } = string.Empty;
-        public string CurrentState { get; set; } = string.Empty;
-        public string CategoryName { get; set; } = string.Empty;
-        public string AssignmentGroup { get; set; } = string.Empty;
-        public string AssignedTo { get; set; } = string.Empty;
-        public DateTime? ResolutionDate { get; set; }
-        public DateTime? LastUpdated { get; set; }
-        public string UpdatedBy { get; set; } = string.Empty;
-        public string ChildIncidents { get; set; } = string.Empty;
-        public DateTime? SLADueDate { get; set; }
-        public string SeverityLevel { get; set; } = string.Empty;
-        public string SubcategoryName { get; set; } = string.Empty;
-        
+        public string Category { get; set; } = string.Empty;
+        public string ResolutionNotes { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public DateTime? ResolvedDateTime { get; set; }
+    }
+     public class IncidentDetailsByPriorityPagedResponse
+    {
+        public int PageNumber { get; set; }
+        public int PageSize { get; set; }
+        public int TotalPages { get; set; }
+        public int TotalElements { get; set; }
+
+        public IEnumerable<IncidentDetailsByPriorityItemResponse> Incidents { get; set; }
+            = new List<IncidentDetailsByPriorityItemResponse>();
     }
 }
