@@ -30,7 +30,8 @@ namespace IncidentAPI.Controllers
                 AssignmentGroup = request.AssignmentGroup,
                 Category = request.Category,
                 Priority = request.Priority,
-                AssignedToName = request.AssignedToName
+                AssignedToName = request.AssignedToName,
+                State = request.State
             };
 
             var result = await _incidentService.GetDashboardKpisAsync(filter);
@@ -58,10 +59,10 @@ namespace IncidentAPI.Controllers
                 Priority = request.Priority,
                 AssignedToName = request.AssignedToName,
                 State = request.State,
-                Metrics = request.Metrics,
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,
-                SortBy = request.SortBy
+                SortBy = request.SortBy,
+                SortOrder = request.SortOrder
             };
 
             var result = await _incidentService.GetNameAndIncidentCountByPriorityAsync(filter);
@@ -76,7 +77,8 @@ namespace IncidentAPI.Controllers
                     P3 = x.P3,
                     P4 = x.P4,
                     TotalCount = x.TotalCount,
-                    AvgResolvedTime = x.AvgResolvedTime
+                    ActualResolvedTime = x.ActualResolvedTime,
+                    LastUpdated = x.LastUpdated
                 }).ToList() ?? new List<NameAndIncidentCountByPriorityResponse>(),
 
                 Pagination = new PaginationResponse
@@ -85,7 +87,8 @@ namespace IncidentAPI.Controllers
                     PageSize = result?.Pagination?.PageSize ?? 0,
                     TotalRecords = result?.Pagination?.TotalRecords ?? 0,
                     TotalPages = result?.Pagination?.TotalPages ?? 0,
-                    SortBy = result?.Pagination?.SortBy ?? string.Empty
+                    SortBy = result?.Pagination?.SortBy ?? string.Empty,
+                    SortOrder = result?.Pagination?.SortOrder ?? string.Empty
                 }
             };
 
@@ -179,19 +182,14 @@ namespace IncidentAPI.Controllers
                 Category = request.Category,
                 Priority = request.Priority,
                 AssignedToName = request.AssignedToName,
-                State = request.State,
-                Metrics = request.Metrics
+                State = request.State
             };
 
             var result = await _incidentService.GetIncidentCountByPriorityAsync(filter);
             var response = new IncidentCountByPriorityGroupedResponse();
 
             if (result == null || !result.Any())
-            {
-                response.Priority = new Dictionary<string, List<IncidentStateCount>>();
-                response.TotalAverageResolvedTime = "0";
                 return Ok(response);
-            }
 
             foreach (var group in result.GroupBy(r => r.Priority))
             {
@@ -208,15 +206,19 @@ namespace IncidentAPI.Controllers
                     Resolved = group.FirstOrDefault(g => g.State.Equals("Resolved", StringComparison.OrdinalIgnoreCase))?.IncidentCount ?? 0
                 };
 
-                response.Priority[group.Key] = new List<IncidentStateCount> { stateCount };
-                response.TotalAverageResolvedTime = first.TotalAverageResolvedTime;
+                response.Priority[group.Key] = new PriorityData
+                {
+                    Details = new List<IncidentStateCount> { stateCount },
+                    AvgResolvedTime = first.AvgResolvedTime,
+                    TotalResolvedTime = first.TotalResolvedTime
+                };
             }
 
             return Ok(response);
         }
 
 
-       [HttpGet("detailsbypriority")]
+        [HttpGet("detailsbypriority")]
         public async Task<IActionResult> GetIncidentDetailsByPriority([FromQuery] DashboardFilterPaginatedRequest request)
         {
             var filter = new IncidentFilter
@@ -237,44 +239,33 @@ namespace IncidentAPI.Controllers
 
             var result = await _incidentService.GetIncidentDetailsByPriorityAsync(filter);
 
-            if (result == null || !result.Any())
+            var paginatedResponse = new IncidentDetailsPaginatedResponse
             {
-                var emptyResponse = new IncidentDetailsByPriorityPagedResponse
+                PageNumber = result.FirstOrDefault()?.PageNumber ?? 1,
+                PageSize = result.FirstOrDefault()?.PageSize ?? 8,
+                TotalPages = result.FirstOrDefault()?.TotalPages ?? 0,
+                TotalElements = result.FirstOrDefault()?.TotalElements ?? 0,
+                Incidents = result.Select(x => new IncidentDetailsResponse
                 {
-                    PageNumber = 1,
-                    PageSize = 8,
-                    TotalPages = 0,
-                    TotalElements = 0,
-                    Incidents = new List<IncidentDetailsByPriorityItemResponse>
-                    {
-                        new IncidentDetailsByPriorityItemResponse()
-                    }
-                };
-
-                return Ok(emptyResponse);
-            }
-
-            var first = result.First();
-
-            var response = new IncidentDetailsByPriorityPagedResponse
-            {
-                PageNumber = first.PageNumber,
-                PageSize = first.PageSize,
-                TotalPages = first.TotalPages,
-                TotalElements = first.TotalElements,
-                Incidents = result.Select(r => new IncidentDetailsByPriorityItemResponse
-                {
-                    IncidentNo = r.IncidentNo,
-                    Description = r.Description,
-                    Category = r.Category,
-                    ResolutionNotes = r.ResolutionNotes,
-                    State = r.State,
-                    ResolvedDateTime = r.ResolvedDateTime
+                    IncidentNo = x.IncidentNo,
+                    AssignedTo = x.AssignedTo,
+                    ShortDescription = x.ShortDescription,
+                    Category = x.Category,
+                    State = x.State,
+                    ActualResolvedTime = x.ActualResolvedTime,
+                    ResolvedDateTime = x.ResolvedDateTime,
+                    BreachSLA = x.BreachSLA
                 }).ToList()
             };
 
-            return Ok(response);
+            if (result == null || !result.Any())
+            {
+                paginatedResponse.Incidents = new List<IncidentDetailsResponse>();
+            }
+
+            return Ok(paginatedResponse);
         }
+
 
         
         [HttpGet("export")]

@@ -7,8 +7,10 @@ namespace Incident.Domain.Models
         public int P2 { get; set; }
         public int P3 { get; set; }
         public int P4 { get; set; }
-        public int TotalCount { get; set; } 
-        public string AvgResolvedTime { get; set; } = string.Empty;
+        public int TotalCount { get; set; }
+        public DateTime? LastUpdated { get; set; }
+        public string ActualResolvedTime { get; set; } = string.Empty;
+
     }
         public class PagedMemberIncidentStats
     {
@@ -23,5 +25,6 @@ namespace Incident.Domain.Models
         public int TotalRecords { get; set; }
         public int TotalPages { get; set; }
         public string SortBy { get; set; } = string.Empty;
+        public string SortOrder{ get; set; } = string.Empty;
     }
 }

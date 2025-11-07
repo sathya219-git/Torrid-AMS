@@ -61,9 +61,10 @@ namespace Incident.Application.Services
 
         public async Task<IEnumerable<IncidentDetailsByPriority>> GetIncidentDetailsByPriorityAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Fetching IncidentDetailsByPriority with filter: {@Filter}", filter);
+            _logger.LogInformation("Fetching incident details by priority with filter: {@Filter}", filter);
             return await _incidentRepository.GetIncidentDetailsByPriorityAsync(filter);
         }
+
         
         public async Task<IEnumerable<ExportIncident>> ExportIncidentsAsync(IncidentFilter filter)
         {

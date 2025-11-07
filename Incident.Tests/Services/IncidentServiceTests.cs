@@ -62,7 +62,7 @@ namespace Incident.Tests.Services
                         P2 = 3,
                         P3 = 1,
                         P4 = 0,
-                        AvgResolvedTime = "4h"
+                        ActualResolvedTime = "4 hours"
                     }
                 },
                 Pagination = new PaginationInfo
@@ -119,44 +119,49 @@ namespace Incident.Tests.Services
         [Fact]
         public async Task GetIncidentCountByPriorityAsync_ReturnsData()
         {
-            // Arrange
-            var filter = new IncidentFilter { Metrics = "weeks" };
+        // Arrange
+        var filter = new IncidentFilter { };
 
-            var mockRepo = new Mock<IIncidentRepository>();
-            mockRepo.Setup(r => r.GetIncidentCountByPriorityAsync(filter))
-                    .ReturnsAsync(new List<IncidentCountByPriority>
-                    {
-                        new IncidentCountByPriority
-                        {
-                            Priority = "P1 - Critical",
-                            State = "Open",
-                            IncidentCount = 10,
-                            TotalCount = 30,
-                            TotalAverageResolvedTime = "2 weeks"
-                        },
-                        new IncidentCountByPriority
-                        {
-                            Priority = "P1 - Critical",
-                            State = "Closed",
-                            IncidentCount = 20,
-                            TotalCount = 30,
-                            TotalAverageResolvedTime = "2 weeks"
-                        }
-                    });
+        var repoData = new List<IncidentCountByPriority>
+        {
+            new IncidentCountByPriority
+            {
+                Priority = "P1 - Critical",
+                State = "Open",
+                IncidentCount = 10,
+                TotalCount = 30,
+                AvgResolvedTime = "2 hours",
+                TotalResolvedTime = "150 hours"
+            },
+            new IncidentCountByPriority
+            {
+                Priority = "P1 - Critical",
+                State = "Closed",
+                IncidentCount = 20,
+                TotalCount = 30,
+                AvgResolvedTime = "2 hours",
+                TotalResolvedTime = "150 hours"
+            }
+        };
 
-            var mockLogger = new Mock<ILogger<IncidentService>>();
-            var service = new IncidentService(mockRepo.Object, mockLogger.Object);
+        var mockRepo = new Mock<IIncidentRepository>();
+        mockRepo.Setup(r => r.GetIncidentCountByPriorityAsync(It.IsAny<IncidentFilter>()))
+                .ReturnsAsync(repoData);
 
-            // Act
-            var result = await service.GetIncidentCountByPriorityAsync(filter);
+        var mockLogger = new Mock<ILogger<IncidentService>>();
+        var service = new IncidentService(mockRepo.Object, mockLogger.Object);
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(2, result.Count());
-            Assert.Equal("P1 - Critical", result.First().Priority);
-            Assert.Equal(30, result.First().TotalCount);
-            Assert.Equal("2 weeks", result.First().TotalAverageResolvedTime);
+        // Act
+        var result = await service.GetIncidentCountByPriorityAsync(filter);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count());
+        Assert.Equal("P1 - Critical", result.First().Priority);
+        Assert.Equal(30, result.First().TotalCount);
+        Assert.Equal("2 hours", result.First().AvgResolvedTime);
         }
+
             
         [Fact]
         public async Task GetCategoryCountByGroupAsync_ReturnsData()
@@ -226,45 +231,55 @@ namespace Incident.Tests.Services
         }
         
         [Fact]
-        public async Task GetIncidentDetailsByPriorityAsync_ReturnsFilteredResults()
+    public async Task GetIncidentDetailsByPriorityAsync_ReturnsFilteredResults()
+    {
+        // Arrange
+        var filter = new IncidentFilter
         {
-            // Arrange
-            var filter = new IncidentFilter 
-            { 
-                PageNumber = 1, 
-                PageSize = 8, 
-                Search = "INC2233985" 
-            };
+            PageNumber = 1,
+            PageSize = 8,
+            Search = "INC2233985"
+        };
 
-            var mockData = new List<IncidentDetailsByPriority>
+        var mockData = new List<IncidentDetailsByPriority>
+        {
+            new IncidentDetailsByPriority
             {
-                new IncidentDetailsByPriority
-                {
-                    IncidentNo = "INC2233985",
-                    Description = "Database outage",
-                    Category = "Infra",
-                    ResolvedDateTime = DateTime.Now,
-                    TotalElements = 10
-                }
-            };
+                PageNumber = 1,
+                PageSize = 8,
+                TotalPages = 3,
+                TotalElements = 10,
+                IncidentNo = "INC2233985",
+                AssignedTo = "John Doe",
+                ShortDescription = "Database outage",
+                Category = "Infra",
+                State = "Closed",
+                ActualResolvedTime = "2 days 5 hours",
+                ResolvedDateTime = DateTime.UtcNow,
+                BreachSLA = "No Breach"
+            }
+        };
 
-            var mockRepo = new Mock<IIncidentRepository>();
-            mockRepo.Setup(r => r.GetIncidentDetailsByPriorityAsync(It.IsAny<IncidentFilter>()))
-                    .ReturnsAsync(mockData);
+        var repo = new Mock<IIncidentRepository>();
+        repo.Setup(r => r.GetIncidentDetailsByPriorityAsync(It.IsAny<IncidentFilter>()))
+            .ReturnsAsync(mockData);
 
-            var mockLogger = new Mock<ILogger<IncidentService>>();
-            var service = new IncidentService(mockRepo.Object, mockLogger.Object);
+        var logger = new Mock<ILogger<IncidentService>>();
+        var service = new IncidentService(repo.Object, logger.Object);
 
-            // Act
-            var result = await service.GetIncidentDetailsByPriorityAsync(filter);
+        // Act
+        var result = await service.GetIncidentDetailsByPriorityAsync(filter);
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.Single(result);
-            Assert.Equal("INC2233985", result.First().IncidentNo);
-            Assert.Equal("Infra", result.First().Category);
-            Assert.Equal(10, result.First().TotalElements);
-        }
-
+        // Assert
+        Assert.NotNull(result);
+        var first = Assert.Single(result);
+        Assert.Equal("INC2233985", first.IncidentNo);
+        Assert.Equal("Infra", first.Category);
+        Assert.Equal("Closed", first.State);
+        Assert.Equal("No Breach", first.BreachSLA);
+        Assert.Equal(10, first.TotalElements);
+        Assert.Equal(1, first.PageNumber);
+        Assert.Equal(8, first.PageSize);
+    }
     }
 }

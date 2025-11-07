@@ -9,7 +9,6 @@ namespace Incident.API.Dtos.Requests
         public List<string>? Priority { get; set; }
         public List<string>? AssignedToName { get; set; }
         public List<string>? State { get; set; }
-         public string? Metrics { get; set; }  
         public string? Search { get; set; }  
         public string? SortBy { get; set; } 
         public string? SortOrder { get; set; }

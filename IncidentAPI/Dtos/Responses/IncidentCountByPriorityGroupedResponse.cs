@@ -2,8 +2,14 @@ namespace Incident.API.Dtos.Responses
 {
     public class IncidentCountByPriorityGroupedResponse
     {
-        public Dictionary<string, List<IncidentStateCount>> Priority { get; set; } = new();
-        public string TotalAverageResolvedTime { get; set; } = string.Empty;
+        public Dictionary<string, PriorityData> Priority { get; set; } = new();
+    }
+
+    public class PriorityData
+    {
+        public List<IncidentStateCount> Details { get; set; } = new();
+        public string AvgResolvedTime { get; set; } = string.Empty;
+        public string TotalResolvedTime { get; set; } = string.Empty;
     }
 
     public class IncidentStateCount

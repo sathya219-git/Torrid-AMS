@@ -36,10 +36,10 @@ namespace Incident.Infrastructure.Repositories
             parameters.Add("@p_priority", filter.Priority.ToCsv());
             parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
             parameters.Add("@p_state", filter.State.ToCsv());
-            parameters.Add("@p_metrics", filter.Metrics ?? "weeks");
             parameters.Add("@p_pageNumber", filter.PageNumber <= 0 ? 1 : filter.PageNumber);
-            parameters.Add("@p_pageSize", filter.PageSize <= 0 ? 4 : filter.PageSize);
-            parameters.Add("@p_sortBy", string.IsNullOrWhiteSpace(filter.SortBy) ? "Alphabetical" : filter.SortBy);
+            parameters.Add("@p_pageSize", filter.PageSize < 0 ? 4 : filter.PageSize);
+            parameters.Add("@p_sortBy", string.IsNullOrWhiteSpace(filter.SortBy) ? "Name" : filter.SortBy);
+            parameters.Add("@p_sortOrder", string.IsNullOrWhiteSpace(filter.SortBy) ? "ASC" : filter.SortOrder);
 
             await connection.OpenAsync();
 
@@ -60,7 +60,8 @@ namespace Incident.Infrastructure.Repositories
                         PageSize = filter.PageSize,
                         TotalRecords = 0,
                         TotalPages = 0,
-                        SortBy = filter.SortBy ?? "Alphabetical"
+                        SortBy = filter.SortBy ?? "Name",
+                        SortOrder = filter.SortOrder ?? "ASC"
                     }
                 };
             }
@@ -74,8 +75,9 @@ namespace Incident.Infrastructure.Repositories
                 P2 = (int)r.P2,
                 P3 = (int)r.P3,
                 P4 = (int)r.P4,
-                TotalCount = (int)r.TotalCount,   
-                AvgResolvedTime = (string)r.AvgResolvedTime
+                TotalCount = (int)r.TotalCount,
+                ActualResolvedTime = (string)r.ActualResolvedTime,
+                LastUpdated = r.LastUpdated
             }).ToList();
 
             var pagination = new PaginationInfo
@@ -84,7 +86,8 @@ namespace Incident.Infrastructure.Repositories
                 PageSize = (int)(first.PageSize ?? filter.PageSize),
                 TotalRecords = (int)(first.TotalRecords ?? 0),
                 TotalPages = (int)(first.TotalPages ?? 0),
-                SortBy = (string)(first.SortBy ?? filter.SortBy ?? "Alphabetical")
+                SortBy = (string)(first.SortBy ?? filter.SortBy ?? "Name"),
+                SortOrder = (string)(first.SortBy ?? filter.SortBy ?? "ASC")
             };
 
             return new PagedMemberIncidentStats
@@ -139,7 +142,8 @@ namespace Incident.Infrastructure.Repositories
                 parameters.Add("@p_category", filter.Category.ToCsv());
                 parameters.Add("@p_priority", filter.Priority.ToCsv());
                 parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
-
+                parameters.Add("@p_state", filter.State.ToCsv());
+  
                 await connection.OpenAsync();
                 var result = await connection.QueryFirstOrDefaultAsync<DashboardKpi>(
                     "sp_GetDashboardKpis",
@@ -236,7 +240,6 @@ namespace Incident.Infrastructure.Repositories
                 parameters.Add("@p_priority", filter.Priority.ToCsv());
                 parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
                 parameters.Add("@p_state", filter.State.ToCsv());
-                parameters.Add("@p_metrics", filter.Metrics ?? "weeks");
 
                 await connection.OpenAsync();
                 var result = await connection.QueryAsync<IncidentCountByPriority>(
@@ -256,7 +259,7 @@ namespace Incident.Infrastructure.Repositories
 
         public async Task<IEnumerable<IncidentDetailsByPriority>> GetIncidentDetailsByPriorityAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Executing stored procedure 'sp_GetIncidentDetailsByPriority' with parameters: {@Filter}", filter);
+            _logger.LogInformation("Executing SP 'sp_GetIncidentDetailsByPriority' with parameters: {@Filter}", filter);
 
             using var connection = new SqlConnection(_connectionString);
 
@@ -265,14 +268,14 @@ namespace Incident.Infrastructure.Repositories
             parameters.Add("@p_toDate", filter.ToDate);
             parameters.Add("@p_category", filter.Category.ToCsv());
             parameters.Add("@p_assignmentGroup", filter.AssignmentGroup.ToCsv());
-            parameters.Add("@p_priority", filter.Priority.ToCsv());
             parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
             parameters.Add("@p_state", filter.State.ToCsv());
             parameters.Add("@p_search", filter.Search);
-            parameters.Add("@p_sortBy", filter.SortBy ?? "Updated");
-            parameters.Add("@p_sortOrder", filter.SortOrder ?? "DESC");
-            parameters.Add("@p_pageNumber", filter.PageNumber);
-            parameters.Add("@p_pageSize", filter.PageSize);
+            parameters.Add("@p_priority", filter.Priority.ToCsv());
+            parameters.Add("@p_pageNumber", filter.PageNumber <= 0 ? 1 : filter.PageNumber);
+            parameters.Add("@p_pageSize", filter.PageSize <= 0 ? 8 : filter.PageSize);
+            parameters.Add("@p_sortBy", string.IsNullOrEmpty(filter.SortBy) ? "Resolved DateTime" : filter.SortBy);
+            parameters.Add("@p_sortOrder", string.IsNullOrEmpty(filter.SortOrder) ? "DESC" : filter.SortOrder);
 
             try
             {
@@ -288,11 +291,10 @@ namespace Incident.Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error executing stored procedure 'sp_GetIncidentDetailsByPriority'");
+                _logger.LogError(ex, "Error executing SP 'sp_GetIncidentDetailsByPriority'");
                 throw;
             }
-        }
-    
+        }    
         
         public async Task<IEnumerable<ExportIncident>> ExportIncidentsAsync(IncidentFilter filter)
         {
