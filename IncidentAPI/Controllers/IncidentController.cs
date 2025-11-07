@@ -267,11 +267,11 @@ namespace IncidentAPI.Controllers
         }
 
 
-        
+
         [HttpGet("export")]
         public async Task<IActionResult> ExportIncidents([FromQuery] DashboardFilterRequest request)
         {
-             var filter = new IncidentFilter
+            var filter = new IncidentFilter
             {
                 FromDate = request.FromDate,
                 ToDate = request.ToDate,
@@ -335,6 +335,47 @@ namespace IncidentAPI.Controllers
 
             string fileName = $"IncidentsExport_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
             return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+        
+        [HttpGet("breachlistbypriority")]
+        public async Task<IActionResult> GetBreachListByPriority([FromQuery] DashboardFilterPaginatedRequest request)
+        {
+            var filter = new IncidentFilter
+            {
+                FromDate = request.FromDate,
+                ToDate = request.ToDate,
+                Category = request.Category,
+                AssignmentGroup = request.AssignmentGroup,
+                AssignedToName = request.AssignedToName,
+                State = request.State,
+                Search = request.Search,
+                Priority = request.Priority,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
+                SortBy = request.SortBy,
+                SortOrder = request.SortOrder
+            };
+
+            var result = await _incidentService.GetBreachListByPriorityAsync(filter);
+
+            var response = new BreachListPagedResponse
+            {
+                PageNumber = result?.PageNumber ?? 1,
+                PageSize = result?.PageSize ?? 8,
+                TotalPages = result?.TotalPages ?? 0,
+                TotalElements = result?.TotalElements ?? 0,
+                Items = result?.Items?.Select(i => new BreachListItemResponse
+                {
+                    IncidentNumber = i.IncidentNumber,
+                    AssignedTo = i.AssignedTo,
+                    ShortDescription = i.ShortDescription,
+                    Category = i.Category,
+                    ActualResolvedTime = i.ActualResolvedTime,
+                    BreachSLA = i.BreachSLA
+                }).ToList() ?? new List<BreachListItemResponse>()
+            };
+
+            return Ok(response);
         }
     }
     

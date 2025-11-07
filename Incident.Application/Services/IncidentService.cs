@@ -65,12 +65,18 @@ namespace Incident.Application.Services
             return await _incidentRepository.GetIncidentDetailsByPriorityAsync(filter);
         }
 
-        
+
         public async Task<IEnumerable<ExportIncident>> ExportIncidentsAsync(IncidentFilter filter)
         {
             _logger.LogInformation("Fetching export incidents data");
             var result = await _incidentRepository.ExportIncidentsAsync(filter);
             return result;
         }
+        public async Task<BreachListPage> GetBreachListByPriorityAsync(IncidentFilter filter)
+        {
+            _logger.LogInformation("Fetching breach list by priority with filter: {@Filter}", filter);
+            return await _incidentRepository.GetBreachListByPriorityAsync(filter);
+        }
+
     }
 }

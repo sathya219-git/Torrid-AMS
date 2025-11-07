@@ -319,5 +319,61 @@ namespace Incident.Tests.Controllers
             Assert.Equal("High", dto.Priority);
             Assert.Equal("Open", dto.State);
         }
+
+        [Fact]
+        public async Task GetBreachListByPriority_ReturnsOk_WithPagedResponse()
+        {
+            // Arrange
+            var request = new DashboardFilterPaginatedRequest
+            {
+                PageNumber = 1,
+                PageSize = 8,
+                Priority = new List<string> { "P1 - Critical" }
+            };
+
+            var page = new BreachListPage
+            {
+                PageNumber = 1,
+                PageSize = 8,
+                TotalPages = 5,
+                TotalElements = 40,
+                Items = new List<BreachListItem>
+            {
+                new BreachListItem
+                {
+                    IncidentNumber = "INC0012345",
+                    AssignedTo = "John Doe",
+                    ShortDescription = "DB outage",
+                    Category = "Infra",
+                    ActualResolvedTime = "1 days 4 hours 15 mins",
+                    BreachSLA = "2 hours 10 mins"
+                }
+            }
+            };
+
+            var service = new Mock<IIncidentService>();
+            service.Setup(s => s.GetBreachListByPriorityAsync(It.IsAny<IncidentFilter>()))
+                   .ReturnsAsync(page);
+
+            var controller = new IncidentController(service.Object);
+
+            var result = await controller.GetBreachListByPriority(request);
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<BreachListPagedResponse>(ok.Value);
+
+            Assert.Equal(1, response.PageNumber);
+            Assert.Equal(8, response.PageSize);
+            Assert.Equal(5, response.TotalPages);
+            Assert.Equal(40, response.TotalElements);
+
+            var item = Assert.Single(response.Items);
+            Assert.Equal("INC0012345", item.IncidentNumber);
+            Assert.Equal("John Doe", item.AssignedTo);
+            Assert.Equal("DB outage", item.ShortDescription);
+            Assert.Equal("Infra", item.Category);
+            Assert.Equal("1 days 4 hours 15 mins", item.ActualResolvedTime);
+            Assert.Equal("2 hours 10 mins", item.BreachSLA);
+        }
     }
 }

@@ -229,57 +229,109 @@ namespace Incident.Tests.Services
             Assert.Single(result);
             Assert.Contains(result, r => r.Number == "INC001" && r.Priority == "High" && r.State == "Open");
         }
-        
-        [Fact]
-    public async Task GetIncidentDetailsByPriorityAsync_ReturnsFilteredResults()
-    {
-        // Arrange
-        var filter = new IncidentFilter
-        {
-            PageNumber = 1,
-            PageSize = 8,
-            Search = "INC2233985"
-        };
 
-        var mockData = new List<IncidentDetailsByPriority>
+        [Fact]
+        public async Task GetIncidentDetailsByPriorityAsync_ReturnsFilteredResults()
         {
-            new IncidentDetailsByPriority
+            // Arrange
+            var filter = new IncidentFilter
             {
                 PageNumber = 1,
                 PageSize = 8,
-                TotalPages = 3,
-                TotalElements = 10,
-                IncidentNo = "INC2233985",
-                AssignedTo = "John Doe",
-                ShortDescription = "Database outage",
-                Category = "Infra",
-                State = "Closed",
-                ActualResolvedTime = "2 days 5 hours",
-                ResolvedDateTime = DateTime.UtcNow,
-                BreachSLA = "No Breach"
-            }
-        };
+                Search = "INC2233985"
+            };
 
-        var repo = new Mock<IIncidentRepository>();
-        repo.Setup(r => r.GetIncidentDetailsByPriorityAsync(It.IsAny<IncidentFilter>()))
-            .ReturnsAsync(mockData);
+            var mockData = new List<IncidentDetailsByPriority>
+            {
+                new IncidentDetailsByPriority
+                {
+                    PageNumber = 1,
+                    PageSize = 8,
+                    TotalPages = 3,
+                    TotalElements = 10,
+                    IncidentNo = "INC2233985",
+                    AssignedTo = "John Doe",
+                    ShortDescription = "Database outage",
+                    Category = "Infra",
+                    State = "Closed",
+                    ActualResolvedTime = "2 days 5 hours",
+                    ResolvedDateTime = DateTime.UtcNow,
+                    BreachSLA = "No Breach"
+                }
+            };
 
-        var logger = new Mock<ILogger<IncidentService>>();
-        var service = new IncidentService(repo.Object, logger.Object);
+            var repo = new Mock<IIncidentRepository>();
+            repo.Setup(r => r.GetIncidentDetailsByPriorityAsync(It.IsAny<IncidentFilter>()))
+                .ReturnsAsync(mockData);
 
-        // Act
-        var result = await service.GetIncidentDetailsByPriorityAsync(filter);
+            var logger = new Mock<ILogger<IncidentService>>();
+            var service = new IncidentService(repo.Object, logger.Object);
 
-        // Assert
-        Assert.NotNull(result);
-        var first = Assert.Single(result);
-        Assert.Equal("INC2233985", first.IncidentNo);
-        Assert.Equal("Infra", first.Category);
-        Assert.Equal("Closed", first.State);
-        Assert.Equal("No Breach", first.BreachSLA);
-        Assert.Equal(10, first.TotalElements);
-        Assert.Equal(1, first.PageNumber);
-        Assert.Equal(8, first.PageSize);
-    }
+            // Act
+            var result = await service.GetIncidentDetailsByPriorityAsync(filter);
+
+            // Assert
+            Assert.NotNull(result);
+            var first = Assert.Single(result);
+            Assert.Equal("INC2233985", first.IncidentNo);
+            Assert.Equal("Infra", first.Category);
+            Assert.Equal("Closed", first.State);
+            Assert.Equal("No Breach", first.BreachSLA);
+            Assert.Equal(10, first.TotalElements);
+            Assert.Equal(1, first.PageNumber);
+            Assert.Equal(8, first.PageSize);
+        }
+        
+         [Fact]
+        public async Task GetBreachListByPriorityAsync_ReturnsPagedData()
+        {
+            var filter = new IncidentFilter
+            {
+                PageNumber = 1,
+                PageSize = 8,
+                Priority = new List<string> { "P1 - Critical" }
+            };
+
+            var page = new BreachListPage
+            {
+                PageNumber = 1,
+                PageSize = 8,
+                TotalPages = 2,
+                TotalElements = 12,
+                Items = new List<BreachListItem>
+                {
+                    new BreachListItem
+                    {
+                        IncidentNumber = "INC0001",
+                        AssignedTo = "John Doe",
+                        ShortDescription = "DB outage",
+                        Category = "Infra",
+                        ActualResolvedTime = "1 days 4 hours 15 mins",
+                        BreachSLA = "2 hours 10 mins"
+                    }
+                }
+            };
+
+            var repo = new Mock<IIncidentRepository>();
+            repo.Setup(r => r.GetBreachListByPriorityAsync(It.IsAny<IncidentFilter>()))
+                .ReturnsAsync(page);
+
+            var logger = new Mock<ILogger<IncidentService>>();
+            var service = new IncidentService(repo.Object, logger.Object);
+
+            var result = await service.GetBreachListByPriorityAsync(filter);
+
+            Assert.NotNull(result);
+            Assert.Equal(1, result.PageNumber);
+            Assert.Equal(8, result.PageSize);
+            Assert.Equal(2, result.TotalPages);
+            Assert.Equal(12, result.TotalElements);
+
+            var item = Assert.Single(result.Items);
+            Assert.Equal("INC0001", item.IncidentNumber);
+            Assert.Equal("John Doe", item.AssignedTo);
+            Assert.Equal("Infra", item.Category);
+            Assert.Equal("2 hours 10 mins", item.BreachSLA);
+        }
     }
 }

@@ -16,6 +16,7 @@ namespace Incident.Application.Interfaces
         Task<IEnumerable<IncidentCountByPriority>> GetIncidentCountByPriorityAsync(IncidentFilter filter);
         Task<IEnumerable<IncidentDetailsByPriority>> GetIncidentDetailsByPriorityAsync(IncidentFilter filter);
         Task<IEnumerable<ExportIncident>> ExportIncidentsAsync(IncidentFilter filter);
+        Task<BreachListPage> GetBreachListByPriorityAsync(IncidentFilter filter);
 
     }
 

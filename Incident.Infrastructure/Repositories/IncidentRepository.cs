@@ -294,8 +294,8 @@ namespace Incident.Infrastructure.Repositories
                 _logger.LogError(ex, "Error executing SP 'sp_GetIncidentDetailsByPriority'");
                 throw;
             }
-        }    
-        
+        }
+
         public async Task<IEnumerable<ExportIncident>> ExportIncidentsAsync(IncidentFilter filter)
         {
             _logger.LogInformation("Calling SP 'sp_ExportIncidents' with parameters: {@Filter}", filter);
@@ -329,5 +329,80 @@ namespace Incident.Infrastructure.Repositories
                 throw;
             }
         }
+        
+        public async Task<BreachListPage> GetBreachListByPriorityAsync(IncidentFilter filter)
+        {
+            _logger.LogInformation("Executing SP 'sp_BreachListByPriority' with parameters: {@Filter}", filter);
+
+            using var connection = new SqlConnection(_connectionString);
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@p_fromDate", filter.FromDate);
+            parameters.Add("@p_toDate", filter.ToDate);
+            parameters.Add("@p_category", filter.Category.ToCsv());
+            parameters.Add("@p_assignmentGroup", filter.AssignmentGroup.ToCsv());
+            parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
+            parameters.Add("@p_state", filter.State.ToCsv());
+            parameters.Add("@p_search", filter.Search);
+            parameters.Add("@p_priority", filter.Priority.ToCsv());
+            parameters.Add("@p_pageNumber", filter.PageNumber <= 0 ? 1 : filter.PageNumber);
+            parameters.Add("@p_pageSize", filter.PageSize <= 0 ? 8 : filter.PageSize);
+            parameters.Add("@p_sortBy", string.IsNullOrEmpty(filter.SortBy) ? "Updated" : filter.SortBy);
+            parameters.Add("@p_sortOrder", string.IsNullOrEmpty(filter.SortOrder) ? "DESC" : filter.SortOrder);
+
+            try
+            {
+                await connection.OpenAsync();
+
+                var rows = await connection.QueryAsync<dynamic>(
+                    "sp_BreachListByPriority",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                var list = new List<BreachListItem>();
+                int pageNumber = 1, pageSize = 8, totalPages = 0, totalElements = 0;
+
+                foreach (var r in rows)
+                {
+                    var dict = (IDictionary<string, object>)r;
+
+                    pageNumber = GetInt(dict, "PageNumber", pageNumber);
+                    pageSize = GetInt(dict, "PageSize", pageSize);
+                    totalPages = GetInt(dict, "TotalPages", totalPages);
+                    totalElements = GetInt(dict, "TotalElements", totalElements);
+
+                    list.Add(new BreachListItem
+                    {
+                        IncidentNumber = GetString(dict, "Incident Number"),
+                        AssignedTo = GetString(dict, "Assigned To"),
+                        ShortDescription = GetString(dict, "Short Description"),
+                        Category = GetString(dict, "Category"),
+                        ActualResolvedTime = GetString(dict, "Actual Resolved Time"),
+                        BreachSLA = GetString(dict, "Breach SLA")
+                    });
+                }
+
+                return new BreachListPage
+                {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalPages = totalPages,
+                    TotalElements = totalElements,
+                    Items = list
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error executing SP 'sp_BreachListByPriority'");
+                throw;
+            }
+
+            static string GetString(IDictionary<string, object> d, string key)
+                => d.TryGetValue(key, out var v) && v != null ? v.ToString() ?? string.Empty : string.Empty;
+
+            static int GetInt(IDictionary<string, object> d, string key, int fallback)
+                => d.TryGetValue(key, out var v) && v != null && int.TryParse(v.ToString(), out var n) ? n : fallback;
+        }   
     }
 }
