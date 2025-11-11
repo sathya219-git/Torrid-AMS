@@ -353,7 +353,10 @@ namespace IncidentAPI.Controllers
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,
                 SortBy = request.SortBy,
-                SortOrder = request.SortOrder
+                SortOrder = request.SortOrder,
+                IncidentNumber = request.IncidentNumber,
+                ActualResolvedTime = request.ActualResolvedTime,
+                BreachSLA = request.BreachSLA
             };
 
             var result = await _incidentService.GetBreachListByPriorityAsync(filter);

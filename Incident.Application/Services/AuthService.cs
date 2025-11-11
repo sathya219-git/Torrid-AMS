@@ -24,5 +24,11 @@ namespace Incident.Application.Services
 
             return user;
         }
+        public async Task<PasswordUpdateResult> UpdatePasswordByDefaultAsync(string emailId, string defaultPassword, string newPassword, string confirmNewPassword)
+        {
+            _logger.LogInformation("Service: update password by default for {Email}", emailId);
+            return await _authRepository.UpdatePasswordByDefaultAsync(
+                emailId, defaultPassword, newPassword, confirmNewPassword);
+        }
     }
 }

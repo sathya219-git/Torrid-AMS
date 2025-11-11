@@ -330,7 +330,7 @@ namespace Incident.Infrastructure.Repositories
             }
         }
         
-        public async Task<BreachListPage> GetBreachListByPriorityAsync(IncidentFilter filter)
+         public async Task<BreachListPage> GetBreachListByPriorityAsync(IncidentFilter filter)
         {
             _logger.LogInformation("Executing SP 'sp_BreachListByPriority' with parameters: {@Filter}", filter);
 
@@ -349,6 +349,9 @@ namespace Incident.Infrastructure.Repositories
             parameters.Add("@p_pageSize", filter.PageSize <= 0 ? 8 : filter.PageSize);
             parameters.Add("@p_sortBy", string.IsNullOrEmpty(filter.SortBy) ? "Updated" : filter.SortBy);
             parameters.Add("@p_sortOrder", string.IsNullOrEmpty(filter.SortOrder) ? "DESC" : filter.SortOrder);
+            parameters.Add("@p_incidentNumber", filter.IncidentNumber.ToCsv());
+            parameters.Add("@p_actualResolvedTime", filter.ActualResolvedTime.ToCsv());
+            parameters.Add("@p_breachSLA", filter.BreachSLA.ToCsv());
 
             try
             {
@@ -403,6 +406,6 @@ namespace Incident.Infrastructure.Repositories
 
             static int GetInt(IDictionary<string, object> d, string key, int fallback)
                 => d.TryGetValue(key, out var v) && v != null && int.TryParse(v.ToString(), out var n) ? n : fallback;
-        }   
+        }    
     }
 }

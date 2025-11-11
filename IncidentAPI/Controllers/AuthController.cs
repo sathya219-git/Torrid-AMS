@@ -33,8 +33,32 @@ namespace Incident.API.Controllers
                         Role = result.Role
                     });
             }
-                return Unauthorized(result);
-            
+            return Unauthorized(result);
+
+        }
+        
+        [HttpPost("resetPassword")]
+        public async Task<IActionResult> UpdatePasswordByDefault([FromBody] UpdatePasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _authService.UpdatePasswordByDefaultAsync(
+                request.EmailID,
+                request.DefaultPassword,
+                request.NewPassword,
+                request.ConfirmNewPassword
+            );
+
+            var response = new UpdatePasswordResponse
+            {
+                Success = result.Success,
+                Message = result.Message
+            };
+            if (result.Success)
+                return Ok(response);
+
+            return BadRequest(response);
         }
     }
 }

@@ -77,6 +77,5 @@ namespace Incident.Application.Services
             _logger.LogInformation("Fetching breach list by priority with filter: {@Filter}", filter);
             return await _incidentRepository.GetBreachListByPriorityAsync(filter);
         }
-
     }
 }

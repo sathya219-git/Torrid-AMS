@@ -41,5 +41,28 @@ namespace Incident.Tests.Controllers
             Assert.Equal("Login successful", response.Message);
             Assert.Equal(1, response.UserID);
         }
+            [Fact]
+        public async Task UpdatePasswordByDefault_ReturnsOk_OnSuccess()
+        {
+            var svc = new Mock<IAuthService>();
+            svc.Setup(s => s.UpdatePasswordByDefaultAsync("a@b.com", "def", "new", "new"))
+            .ReturnsAsync(new PasswordUpdateResult { Success = true, Message = "Password updated successfully." });
+
+            var controller = new AuthController(svc.Object);
+
+            var result = await controller.UpdatePasswordByDefault(new UpdatePasswordRequest
+            {
+                EmailID = "a@b.com",
+                DefaultPassword = "def",
+                NewPassword = "new",
+                ConfirmNewPassword = "new"
+            });
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var body = Assert.IsType<UpdatePasswordResponse>(ok.Value);
+
+            Assert.True(body.Success);
+            Assert.Equal("Password updated successfully.", body.Message);
+        }
     }
 }

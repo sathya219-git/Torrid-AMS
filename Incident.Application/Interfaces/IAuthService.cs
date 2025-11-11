@@ -6,5 +6,7 @@ namespace Incident.Application.Interfaces
     public interface IAuthService
     {
         Task<User?> LoginAsync(string Email, string password);
+        Task<PasswordUpdateResult> UpdatePasswordByDefaultAsync(string emailId,string defaultPassword,string newPassword, string confirmNewPassword);
+    
     }
 }

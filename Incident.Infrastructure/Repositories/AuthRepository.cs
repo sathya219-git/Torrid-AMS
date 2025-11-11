@@ -24,7 +24,7 @@ namespace Incident.Infrastructure.Repositories
         {
             _logger.LogInformation("Attempting login for user {Email}", Email);
             using var connection = new SqlConnection(_connectionString);
-            
+
             var parameters = new DynamicParameters();
             parameters.Add("@Email", Email);
             parameters.Add("@Password", password);
@@ -32,7 +32,7 @@ namespace Incident.Infrastructure.Repositories
             try
             {
                 await connection.OpenAsync();
-                
+
                 var result = await connection.QueryFirstOrDefaultAsync<User>(
                     "sp_Login",
                     parameters,
@@ -45,6 +45,55 @@ namespace Incident.Infrastructure.Repositories
             {
                 _logger.LogError(ex, "Error executing SP 'sp_Login'");
                 throw;
+            }
+        }
+        
+        public async Task<PasswordUpdateResult> UpdatePasswordByDefaultAsync(
+            string emailId,
+            string defaultPassword,
+            string newPassword,
+            string confirmNewPassword)
+        {
+            _logger.LogInformation("Attempting default password update for {Email}", emailId);
+
+            using var connection = new SqlConnection(_connectionString);
+            var parameters = new DynamicParameters();
+            parameters.Add("@EmailID", emailId);
+            parameters.Add("@DefaultPassword", defaultPassword);
+            parameters.Add("@NewPassword", newPassword);
+            parameters.Add("@ConfirmNewPassword", confirmNewPassword);
+
+            try
+            {
+                await connection.OpenAsync();
+                await connection.ExecuteAsync(
+                    "dbo.SP_UpdatePasswordByDefault",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+                return new PasswordUpdateResult
+                {
+                    Success = true,
+                    Message = "Password updated successfully."
+                };
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogWarning(ex, "Failed to update password for {Email}", emailId);
+                return new PasswordUpdateResult
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error updating password for {Email}", emailId);
+                return new PasswordUpdateResult
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while updating the password."
+                };
             }
         }
     }

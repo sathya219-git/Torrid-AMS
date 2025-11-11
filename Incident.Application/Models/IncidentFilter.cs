@@ -14,5 +14,8 @@ namespace Incident.Application.Models
         public string? SortOrder { get; set; } 
         public int PageNumber { get; set; } 
         public int PageSize { get; set; } 
+        public List<string>? IncidentNumber { get; set; }
+        public List<string>? ActualResolvedTime { get; set; }
+        public List<string>? BreachSLA { get; set; }
     }
 }
