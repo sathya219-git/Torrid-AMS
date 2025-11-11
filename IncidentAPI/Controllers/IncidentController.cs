@@ -288,25 +288,25 @@ namespace IncidentAPI.Controllers
             {
                 Number = r.Number,
                 Opened = r.Opened,
-                ShortDescription = r.ShortDescription,
+                Short_Description = r.Short_Description,
                 Caller = r.Caller,
                 Priority = r.Priority,
                 State = r.State,
                 Category = r.Category,
-                AssignmentGroup = r.AssignmentGroup,
-                AssignedTo = r.AssignedTo,
+                Assignment_Group = r.Assignment_Group,
+                Assigned_To = r.Assigned_To,
                 Updated = r.Updated,
-                UpdatedBy = r.UpdatedBy,
-                ChildIncidents = r.ChildIncidents,
-                SlaDue = r.SlaDue,
+                Updated_By = r.Updated_By,
+                Child_Incidents = r.Child_Incidents,
+                Sla_Due = r.Sla_Due,
                 Severity = r.Severity,
                 Subcategory = r.Subcategory,
-                ResolutionNotes = r.ResolutionNotes,
+                Resolution_Notes = r.Resolution_Notes,
                 Resolved = r.Resolved,
-                SlaCalculation = r.SlaCalculation,
-                ParentIncident = r.ParentIncident,
+                Sla_Calculation = r.Sla_Calculation,
+                Parent_Incident = r.Parent_Incident,
                 Parent = r.Parent,
-                TaskType = r.TaskType
+                Task_Type = r.Task_Type
             });
 
             using var workbook = new ClosedXML.Excel.XLWorkbook();

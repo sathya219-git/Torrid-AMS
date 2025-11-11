@@ -231,55 +231,55 @@ namespace Incident.Tests.Services
         }
         
         [Fact]
-    public async Task GetIncidentDetailsByPriorityAsync_ReturnsFilteredResults()
-    {
-        // Arrange
-        var filter = new IncidentFilter
+        public async Task GetIncidentDetailsByPriorityAsync_ReturnsFilteredResults()
         {
-            PageNumber = 1,
-            PageSize = 8,
-            Search = "INC2233985"
-        };
-
-        var mockData = new List<IncidentDetailsByPriority>
-        {
-            new IncidentDetailsByPriority
+            // Arrange
+            var filter = new IncidentFilter
             {
                 PageNumber = 1,
                 PageSize = 8,
-                TotalPages = 3,
-                TotalElements = 10,
-                IncidentNo = "INC2233985",
-                AssignedTo = "John Doe",
-                ShortDescription = "Database outage",
-                Category = "Infra",
-                State = "Closed",
-                ActualResolvedTime = "2 days 5 hours",
-                ResolvedDateTime = DateTime.UtcNow,
-                BreachSLA = "No Breach"
-            }
-        };
+                Search = "INC2233985"
+            };
 
-        var repo = new Mock<IIncidentRepository>();
-        repo.Setup(r => r.GetIncidentDetailsByPriorityAsync(It.IsAny<IncidentFilter>()))
-            .ReturnsAsync(mockData);
+            var mockData = new List<IncidentDetailsByPriority>
+            {
+                new IncidentDetailsByPriority
+                {
+                    PageNumber = 1,
+                    PageSize = 8,
+                    TotalPages = 3,
+                    TotalElements = 10,
+                    IncidentNo = "INC2233985",
+                    AssignedTo = "John Doe",
+                    ShortDescription = "Database outage",
+                    Category = "Infra",
+                    State = "Closed",
+                    ActualResolvedTime = "2 days 5 hours",
+                    ResolvedDateTime = DateTime.UtcNow,
+                    BreachSLA = "No Breach"
+                }
+            };
 
-        var logger = new Mock<ILogger<IncidentService>>();
-        var service = new IncidentService(repo.Object, logger.Object);
+            var repo = new Mock<IIncidentRepository>();
+            repo.Setup(r => r.GetIncidentDetailsByPriorityAsync(It.IsAny<IncidentFilter>()))
+                .ReturnsAsync(mockData);
 
-        // Act
-        var result = await service.GetIncidentDetailsByPriorityAsync(filter);
+            var logger = new Mock<ILogger<IncidentService>>();
+            var service = new IncidentService(repo.Object, logger.Object);
 
-        // Assert
-        Assert.NotNull(result);
-        var first = Assert.Single(result);
-        Assert.Equal("INC2233985", first.IncidentNo);
-        Assert.Equal("Infra", first.Category);
-        Assert.Equal("Closed", first.State);
-        Assert.Equal("No Breach", first.BreachSLA);
-        Assert.Equal(10, first.TotalElements);
-        Assert.Equal(1, first.PageNumber);
-        Assert.Equal(8, first.PageSize);
-    }
+            // Act
+            var result = await service.GetIncidentDetailsByPriorityAsync(filter);
+
+            // Assert
+            Assert.NotNull(result);
+            var first = Assert.Single(result);
+            Assert.Equal("INC2233985", first.IncidentNo);
+            Assert.Equal("Infra", first.Category);
+            Assert.Equal("Closed", first.State);
+            Assert.Equal("No Breach", first.BreachSLA);
+            Assert.Equal(10, first.TotalElements);
+            Assert.Equal(1, first.PageNumber);
+            Assert.Equal(8, first.PageSize);
+        }
     }
 }

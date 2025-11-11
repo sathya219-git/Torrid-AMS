@@ -1,4 +1,5 @@
 using Incident.Application.Interfaces;
+using Incident.Application.Options;
 using Incident.Application.Services;
 using Incident.Infrastructure.Repositories;
 
@@ -12,6 +13,12 @@ builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
 builder.Services.AddScoped<IIncidentService, IncidentService>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IFileIngestionService, FileIngestionService>();
+builder.Services.AddScoped<IFileUploadRepository, FileUploadRepository>();
+
+builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
+builder.Services.Configure<IngestionOptions>(builder.Configuration.GetSection("Ingestion"));
+
 
 builder.Services.AddCors(options =>
 {

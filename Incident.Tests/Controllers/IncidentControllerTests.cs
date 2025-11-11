@@ -171,60 +171,60 @@ namespace Incident.Tests.Controllers
             Assert.Equal(0, stateCounts.Resolved);
         }
 
-    [Fact]
-    public async Task GetIncidentDetailsByPriority_ReturnsPagedResponse()
-    {
-        // Arrange
-        var request = new DashboardFilterPaginatedRequest
+        [Fact]
+        public async Task GetIncidentDetailsByPriority_ReturnsPagedResponse()
         {
-            PageNumber = 1,
-            PageSize = 8,
-            Search = "INC2233985"
-        };
-
-        var mockData = new List<IncidentDetailsByPriority>
-        {
-            new IncidentDetailsByPriority
+            // Arrange
+            var request = new DashboardFilterPaginatedRequest
             {
                 PageNumber = 1,
                 PageSize = 8,
-                TotalPages = 3,
-                TotalElements = 10,
-                IncidentNo = "INC2233985",
-                AssignedTo = "John Doe",
-                ShortDescription = "Database outage",
-                Category = "Infra",
-                State = "Closed",
-                ActualResolvedTime = "2 days 5 hours",
-                ResolvedDateTime = DateTime.UtcNow,
-                BreachSLA = "No Breach"
-            }
-        };
+                Search = "INC2233985"
+            };
 
-        var service = new Mock<IIncidentService>();
-        service.Setup(s => s.GetIncidentDetailsByPriorityAsync(It.IsAny<IncidentFilter>()))
-               .ReturnsAsync(mockData);
+            var mockData = new List<IncidentDetailsByPriority>
+            {
+                new IncidentDetailsByPriority
+                {
+                    PageNumber = 1,
+                    PageSize = 8,
+                    TotalPages = 3,
+                    TotalElements = 10,
+                    IncidentNo = "INC2233985",
+                    AssignedTo = "John Doe",
+                    ShortDescription = "Database outage",
+                    Category = "Infra",
+                    State = "Closed",
+                    ActualResolvedTime = "2 days 5 hours",
+                    ResolvedDateTime = DateTime.UtcNow,
+                    BreachSLA = "No Breach"
+                }
+            };
 
-        var controller = new IncidentController(service.Object);
+            var service = new Mock<IIncidentService>();
+            service.Setup(s => s.GetIncidentDetailsByPriorityAsync(It.IsAny<IncidentFilter>()))
+                .ReturnsAsync(mockData);
 
-        // Act
-        var result = await controller.GetIncidentDetailsByPriority(request);
+            var controller = new IncidentController(service.Object);
 
-        // Assert
-        var ok = Assert.IsType<OkObjectResult>(result);
-        var response = Assert.IsType<IncidentDetailsPaginatedResponse>(ok.Value);
+            // Act
+            var result = await controller.GetIncidentDetailsByPriority(request);
 
-        Assert.Equal(1, response.PageNumber);
-        Assert.Equal(8, response.PageSize);
-        Assert.Equal(3, response.TotalPages);
-        Assert.Equal(10, response.TotalElements);
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<IncidentDetailsPaginatedResponse>(ok.Value);
 
-        var item = Assert.Single(response.Incidents);
-        Assert.Equal("INC2233985", item.IncidentNo);
-        Assert.Equal("Infra", item.Category);
-        Assert.Equal("Closed", item.State);
-        Assert.Equal("No Breach", item.BreachSLA);
-    }
+            Assert.Equal(1, response.PageNumber);
+            Assert.Equal(8, response.PageSize);
+            Assert.Equal(3, response.TotalPages);
+            Assert.Equal(10, response.TotalElements);
+
+            var item = Assert.Single(response.Incidents);
+            Assert.Equal("INC2233985", item.IncidentNo);
+            Assert.Equal("Infra", item.Category);
+            Assert.Equal("Closed", item.State);
+            Assert.Equal("No Breach", item.BreachSLA);
+        }
 
 
         [Fact]
