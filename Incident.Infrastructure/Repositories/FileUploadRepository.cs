@@ -43,11 +43,11 @@ namespace Incident.Infrastructure.Repositories
             using var conn = new SqlConnection(_connStr);
 
             var p = new DynamicParameters();
-            p.Add("@SearchText",  filter.SearchText, DbType.String);
-            p.Add("@SortBy",      filter.SortBy,     DbType.String);
-            p.Add("@SortDir",     filter.SortDir,    DbType.String);
-            p.Add("@PageNumber",  filter.PageNumber, DbType.Int32);
-            p.Add("@PageSize",    filter.PageSize,   DbType.Int32);
+            p.Add("@SearchText", filter.SearchText, DbType.String);
+            p.Add("@SortBy", filter.SortBy, DbType.String);
+            p.Add("@SortDir", filter.SortDir, DbType.String);
+            p.Add("@PageNumber", filter.PageNumber, DbType.Int32);
+            p.Add("@PageSize", filter.PageSize, DbType.Int32);
 
             _logger.LogDebug("EXEC dbo.sp_GetUploadHistory {@p}", new { filter.SearchText, filter.SortBy, filter.SortDir, filter.PageNumber, filter.PageSize });
 
@@ -55,6 +55,37 @@ namespace Incident.Infrastructure.Repositories
                 "dbo.sp_GetUploadHistory",
                 p,
                 commandType: CommandType.StoredProcedure);
+        }
+        
+         public async Task<ImportSummary> ExecuteImportAsync(int uploadHistoryId, CancellationToken ct = default)
+        {
+            using var conn = new SqlConnection(_connStr);
+            await conn.OpenAsync(ct);
+
+            var p = new DynamicParameters();
+            p.Add("@UploadHistoryId", uploadHistoryId, DbType.Int32);
+
+            _logger.LogDebug("Calling dbo.sp_ImportIncidentsFromUpload {@UploadHistoryId}", uploadHistoryId);
+
+            try
+            {
+                var row = await conn.QuerySingleAsync<ImportSummary>(
+                    sql: "dbo.sp_ImportIncidentsFromUpload",
+                    param: p,
+                    commandType: CommandType.StoredProcedure);
+
+                return row;
+            }
+            catch (SqlException sqlEx)
+            {
+                _logger.LogError(sqlEx, "SQL error while executing sp_ImportIncidentsFromUpload for id {Id}", uploadHistoryId);
+                throw;
+            }
+            catch (InvalidOperationException invEx)
+            {
+                _logger.LogError(invEx, "sp_ImportIncidentsFromUpload returned no rows for id {Id}", uploadHistoryId);
+                throw new InvalidOperationException($"Import stored procedure did not return summary for UploadHistoryId {uploadHistoryId}");
+            }
         }
     }
 }

@@ -162,5 +162,19 @@ namespace Incident.Application.Services
             var result = await _repo.GetAsync(filter, ct);
             return result;
         }
+
+         public async Task<ImportSummary> ImportFromUploadAsync(int uploadHistoryId, CancellationToken ct = default)
+        {
+            if (uploadHistoryId <= 0) throw new ArgumentException("UploadHistoryId must be greater than zero.", nameof(uploadHistoryId));
+
+            _logger.LogInformation("Starting import for UploadHistoryId {UploadHistoryId}", uploadHistoryId);
+
+            var result = await _repo.ExecuteImportAsync(uploadHistoryId, ct);
+
+            _logger.LogInformation("Import complete for UploadHistoryId {UploadHistoryId}: Inserted={Inserted} Updated={Updated} Skipped={Skipped}",
+                uploadHistoryId, result.InsertedCount, result.UpdatedCount, result.SkippedDueToMissingNumber);
+
+            return result;
+        }
     }
 }

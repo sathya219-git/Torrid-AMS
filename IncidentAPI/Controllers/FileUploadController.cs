@@ -7,6 +7,7 @@ using Incident.Application.Interfaces;
 using Incident.Application.Models;
 using Microsoft.AspNetCore.Mvc;
 using Incident.Application.Helpers;
+using Incident.API.Dtos.Responses;
 
 
 namespace Incident.API.Controllers
@@ -19,7 +20,9 @@ namespace Incident.API.Controllers
 
 
         public FileUploadController(IFileIngestionService fileIngestionService)
-        => _fileIngestionService = fileIngestionService;
+        {
+            _fileIngestionService = fileIngestionService;
+        }
 
         [HttpPost("upload")]
         [Consumes("multipart/form-data")]
@@ -110,6 +113,41 @@ namespace Incident.API.Controllers
             };
 
             return Ok(response);
+        }
+
+        [HttpPost("import")]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(ImportSummaryResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Import([FromRoute] int uploadHistoryId, CancellationToken ct)
+        {
+            if (uploadHistoryId <= 0)
+                return BadRequest("Invalid UploadHistoryId.");
+
+            try
+            {
+                var summary = await _fileIngestionService.ImportFromUploadAsync(uploadHistoryId, ct);
+
+                var resp = new ImportSummaryResponse
+                {
+                    StagingRowCount = summary.StagingRowCount,
+                    InsertedCount = summary.InsertedCount,
+                    UpdatedCount = summary.UpdatedCount,
+                    MatchedButNotUpdatedCount = summary.MatchedButNotUpdatedCount,
+                    SkippedDueToMissingNumber = summary.SkippedDueToMissingNumber
+                };
+
+                return Ok(resp);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while importing incidents.");
+            }
         }
     }
 }

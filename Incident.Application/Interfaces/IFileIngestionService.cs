@@ -9,5 +9,6 @@ namespace Incident.Application.Interfaces
     {
        Task<FileIngestionResult> IngestAsync(FileIngestionRequest request, CancellationToken ct = default);
        Task<IEnumerable<UploadHistory>> GetAsync(UploadHistoryFilter filter, CancellationToken ct = default);
+       Task<ImportSummary> ImportFromUploadAsync(int uploadHistoryId, CancellationToken ct = default);
     }
 }
