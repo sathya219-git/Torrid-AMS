@@ -120,7 +120,7 @@ namespace Incident.API.Controllers
         [ProducesResponseType(typeof(ImportSummaryResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Import([FromRoute] int uploadHistoryId, CancellationToken ct)
+        public async Task<IActionResult> Import([FromQuery] int uploadHistoryId, CancellationToken ct)
         {
             if (uploadHistoryId <= 0)
                 return BadRequest("Invalid UploadHistoryId.");
