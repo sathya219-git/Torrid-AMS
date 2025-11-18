@@ -273,7 +273,7 @@ namespace Incident.Infrastructure.Repositories
             parameters.Add("@p_search", filter.Search);
             parameters.Add("@p_priority", filter.Priority.ToCsv());
             parameters.Add("@p_pageNumber", filter.PageNumber <= 0 ? 1 : filter.PageNumber);
-            parameters.Add("@p_pageSize", filter.PageSize < 0 ? 8 : filter.PageSize);
+            parameters.Add("@p_pageSize", filter.PageSize <= 0 ? 8 : filter.PageSize);
             parameters.Add("@p_sortBy", string.IsNullOrEmpty(filter.SortBy) ? "Resolved DateTime" : filter.SortBy);
             parameters.Add("@p_sortOrder", string.IsNullOrEmpty(filter.SortOrder) ? "DESC" : filter.SortOrder);
 
@@ -346,7 +346,7 @@ namespace Incident.Infrastructure.Repositories
             parameters.Add("@p_search", filter.Search);
             parameters.Add("@p_priority", filter.Priority.ToCsv());
             parameters.Add("@p_pageNumber", filter.PageNumber <= 0 ? 1 : filter.PageNumber);
-            parameters.Add("@p_pageSize", filter.PageSize < 0 ? 8 : filter.PageSize);
+            parameters.Add("@p_pageSize", filter.PageSize <= 0 ? 8 : filter.PageSize);
             parameters.Add("@p_sortBy", string.IsNullOrEmpty(filter.SortBy) ? "Updated" : filter.SortBy);
             parameters.Add("@p_sortOrder", string.IsNullOrEmpty(filter.SortOrder) ? "DESC" : filter.SortOrder);
             parameters.Add("@p_incidentNumber", filter.IncidentNumber.ToCsv());
