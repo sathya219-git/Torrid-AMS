@@ -10,6 +10,7 @@ namespace Incident.API.Dtos.Responses
         public List<IncidentStateCount> Details { get; set; } = new();
         public string AvgResolvedTime { get; set; } = string.Empty;
         public string TotalResolvedTime { get; set; } = string.Empty;
+        public int BreachedCount {get; set;}
     }
 
     public class IncidentStateCount

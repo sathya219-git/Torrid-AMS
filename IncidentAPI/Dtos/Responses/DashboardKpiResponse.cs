@@ -6,5 +6,6 @@ namespace Incident.API.Dtos.Responses
         public int OpenIncidents { get; set; }
         public int InProgressIncidents { get; set; }
         public int ClosedIncidents { get; set; }
+        public int BreachedCount { get; set; }
     }
 }

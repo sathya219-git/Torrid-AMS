@@ -72,7 +72,7 @@ namespace Incident.Application.Services
             var result = await _incidentRepository.ExportIncidentsAsync(filter);
             return result;
         }
-        public async Task<BreachListPage> GetBreachListByPriorityAsync(IncidentFilter filter)
+        public async Task<IEnumerable<BreachListItem>> GetBreachListByPriorityAsync(IncidentFilter filter)
         {
             _logger.LogInformation("Fetching breach list by priority with filter: {@Filter}", filter);
             return await _incidentRepository.GetBreachListByPriorityAsync(filter);

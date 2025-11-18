@@ -15,6 +15,10 @@ namespace Incident.API.Dtos.Responses
         public string AssignedTo { get; set; } = string.Empty;
         public string ShortDescription { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? UpdatedDateTime { get; set; }
+        public DateTime? ResolvedDateTime { get; set; }
         public string ActualResolvedTime { get; set; } = string.Empty;
         public string BreachSLA { get; set; } = string.Empty;
     }

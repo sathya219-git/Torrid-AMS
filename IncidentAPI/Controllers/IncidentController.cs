@@ -41,7 +41,8 @@ namespace IncidentAPI.Controllers
                 TotalIncidents = result?.TotalIncidents ?? 0,
                 OpenIncidents = result?.OpenIncidents ?? 0,
                 InProgressIncidents = result?.InProgressIncidents ?? 0,
-                ClosedIncidents = result?.ClosedIncidents ?? 0
+                ClosedIncidents = result?.ClosedIncidents ?? 0,
+                BreachedCount = result?.Breached ?? 0
             };
 
             return Ok(response);
@@ -210,7 +211,8 @@ namespace IncidentAPI.Controllers
                 {
                     Details = new List<IncidentStateCount> { stateCount },
                     AvgResolvedTime = first.AvgResolvedTime,
-                    TotalResolvedTime = first.TotalResolvedTime
+                    TotalResolvedTime = first.TotalResolvedTime,
+                    BreachedCount = first.BreachedCount
                 };
             }
 
@@ -252,8 +254,10 @@ namespace IncidentAPI.Controllers
                     ShortDescription = x.ShortDescription,
                     Category = x.Category,
                     State = x.State,
-                    ActualResolvedTime = x.ActualResolvedTime,
+                    CreatedDateTime = x.Created,
+                    UpdatedDateTime = x.Updated,
                     ResolvedDateTime = x.ResolvedDateTime,
+                    ActualResolvedTime = x.ActualResolvedTime,
                     BreachSLA = x.BreachSLA
                 }).ToList()
             };
@@ -363,16 +367,20 @@ namespace IncidentAPI.Controllers
 
             var response = new BreachListPagedResponse
             {
-                PageNumber = result?.PageNumber ?? 1,
-                PageSize = result?.PageSize ?? 8,
-                TotalPages = result?.TotalPages ?? 0,
-                TotalElements = result?.TotalElements ?? 0,
-                Items = result?.Items?.Select(i => new BreachListItemResponse
+                PageNumber =result.FirstOrDefault()?.PageNumber ?? 1,
+                PageSize = result.FirstOrDefault()?.PageSize ?? 8,
+                TotalPages = result.FirstOrDefault()?.TotalPages ?? 0,
+                TotalElements = result.FirstOrDefault()?.TotalElements ?? 0,
+                Items = result.Select(i => new BreachListItemResponse
                 {
                     IncidentNumber = i.IncidentNumber,
                     AssignedTo = i.AssignedTo,
                     ShortDescription = i.ShortDescription,
                     Category = i.Category,
+                    State = i.State,
+                    CreatedDateTime = i.Created,
+                    UpdatedDateTime= i.Updated,
+                    ResolvedDateTime = i.ResolvedDateTime,
                     ActualResolvedTime = i.ActualResolvedTime,
                     BreachSLA = i.BreachSLA
                 }).ToList() ?? new List<BreachListItemResponse>()

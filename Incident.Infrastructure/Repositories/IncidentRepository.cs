@@ -273,7 +273,7 @@ namespace Incident.Infrastructure.Repositories
             parameters.Add("@p_search", filter.Search);
             parameters.Add("@p_priority", filter.Priority.ToCsv());
             parameters.Add("@p_pageNumber", filter.PageNumber <= 0 ? 1 : filter.PageNumber);
-            parameters.Add("@p_pageSize", filter.PageSize <= 0 ? 8 : filter.PageSize);
+            parameters.Add("@p_pageSize", filter.PageSize < 0 ? 8 : filter.PageSize);
             parameters.Add("@p_sortBy", string.IsNullOrEmpty(filter.SortBy) ? "Resolved DateTime" : filter.SortBy);
             parameters.Add("@p_sortOrder", string.IsNullOrEmpty(filter.SortOrder) ? "DESC" : filter.SortOrder);
 
@@ -330,7 +330,7 @@ namespace Incident.Infrastructure.Repositories
             }
         }
         
-         public async Task<BreachListPage> GetBreachListByPriorityAsync(IncidentFilter filter)
+         public async Task<IEnumerable<BreachListItem>> GetBreachListByPriorityAsync(IncidentFilter filter)
         {
             _logger.LogInformation("Executing SP 'sp_BreachListByPriority' with parameters: {@Filter}", filter);
 
@@ -357,43 +357,13 @@ namespace Incident.Infrastructure.Repositories
             {
                 await connection.OpenAsync();
 
-                var rows = await connection.QueryAsync<dynamic>(
+                 var result = await connection.QueryAsync<BreachListItem>(
                     "sp_BreachListByPriority",
                     parameters,
                     commandType: CommandType.StoredProcedure
                 );
 
-                var list = new List<BreachListItem>();
-                int pageNumber = 1, pageSize = 8, totalPages = 0, totalElements = 0;
-
-                foreach (var r in rows)
-                {
-                    var dict = (IDictionary<string, object>)r;
-
-                    pageNumber = GetInt(dict, "PageNumber", pageNumber);
-                    pageSize = GetInt(dict, "PageSize", pageSize);
-                    totalPages = GetInt(dict, "TotalPages", totalPages);
-                    totalElements = GetInt(dict, "TotalElements", totalElements);
-
-                    list.Add(new BreachListItem
-                    {
-                        IncidentNumber = GetString(dict, "Incident Number"),
-                        AssignedTo = GetString(dict, "Assigned To"),
-                        ShortDescription = GetString(dict, "Short Description"),
-                        Category = GetString(dict, "Category"),
-                        ActualResolvedTime = GetString(dict, "Actual Resolved Time"),
-                        BreachSLA = GetString(dict, "Breach SLA")
-                    });
-                }
-
-                return new BreachListPage
-                {
-                    PageNumber = pageNumber,
-                    PageSize = pageSize,
-                    TotalPages = totalPages,
-                    TotalElements = totalElements,
-                    Items = list
-                };
+                return result;
             }
             catch (Exception ex)
             {
@@ -401,11 +371,11 @@ namespace Incident.Infrastructure.Repositories
                 throw;
             }
 
-            static string GetString(IDictionary<string, object> d, string key)
-                => d.TryGetValue(key, out var v) && v != null ? v.ToString() ?? string.Empty : string.Empty;
+            // static string GetString(IDictionary<string, object> d, string key)
+            //     => d.TryGetValue(key, out var v) && v != null ? v.ToString() ?? string.Empty : string.Empty;
 
-            static int GetInt(IDictionary<string, object> d, string key, int fallback)
-                => d.TryGetValue(key, out var v) && v != null && int.TryParse(v.ToString(), out var n) ? n : fallback;
+            // static int GetInt(IDictionary<string, object> d, string key, int fallback)
+            //     => d.TryGetValue(key, out var v) && v != null && int.TryParse(v.ToString(), out var n) ? n : fallback;
         }    
     }
 }
