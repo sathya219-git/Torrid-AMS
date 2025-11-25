@@ -30,7 +30,7 @@ namespace Incident.Application.Services
             _logger = logger;
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); // needed for .xls
         }
-
+        
         public async Task<FileIngestionResult> IngestAsync(FileIngestionRequest request, CancellationToken ct = default)
         {
             if (request is null || request.Length <= 0)
@@ -62,11 +62,9 @@ namespace Incident.Application.Services
 
             // find first non-empty row as header
             int headerRowIndex = 0;
-            while (headerRowIndex < table.Rows.Count &&
-                   table.Rows[headerRowIndex].ItemArray.All(c => string.IsNullOrWhiteSpace(c?.ToString())))
-            {
+            while (headerRowIndex < table.Rows.Count && table.Rows[headerRowIndex].ItemArray.All(c => string.IsNullOrWhiteSpace(c?.ToString())))
                 headerRowIndex++;
-            }
+
             if (headerRowIndex >= table.Rows.Count)
                 throw new UnsupportedFormatException("No header row found.");
 
@@ -74,23 +72,22 @@ namespace Incident.Application.Services
             var headers = headerRow.ItemArray.Select(v => v?.ToString()?.Trim() ?? string.Empty).ToList();
             ValidateHeaders(headers);
 
-            // Write CSV (all rows from headerRowIndex onward)
+            // CSV write
             using (var fs = new FileStream(csvPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-            using (var sw = new StreamWriter(fs, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)))
+            using (var sw = new StreamWriter(fs, new UTF8Encoding(false)))
             {
                 for (int r = headerRowIndex; r < table.Rows.Count; r++)
                 {
-                    var values = table.Rows[r].ItemArray.Select(cell => ToCsvField(cell?.ToString() ?? string.Empty));
+                    var values = table.Rows[r].ItemArray
+                        .Select((cell, index) => ConvertToCsvValue(cell, headers[index]))
+                        .ToList();
+
                     await sw.WriteLineAsync(string.Join(",", values));
                 }
             }
 
-            // Persist metadata via SP
-            var uploadId = await _repo.SaveFileUploadAsync(
-                filePath: csvPath,
-                fileName: originalName,
-                fileSize: request.Length);
-
+            // Save metadata
+            var uploadId = await _repo.SaveFileUploadAsync(csvPath, originalName, request.Length);
             _logger.LogInformation("Ingested file {File} -> {Csv} (UploadID {Id})", originalName, csvPath, uploadId);
 
             return new FileIngestionResult
@@ -101,6 +98,27 @@ namespace Incident.Application.Services
                 CsvPath = csvPath,
                 Message = "File uploaded, validated, converted, and recorded."
             };
+        }
+
+        /// <summary>
+        /// Convert cell values to CSV field including date formatting
+        /// </summary>
+        private string ConvertToCsvValue(object cell, string header)
+        {
+            if (cell is null)
+                return "";
+
+            string raw = cell.ToString()?.Trim() ?? "";
+
+            // Attempt to parse and format date
+            if (DateTime.TryParse(raw, out var dt))
+            {
+                string formatted = dt.ToString("MM-dd-yyyy HH:mm:ss"); // format you want
+                _logger.LogInformation("Date Converted | Header: {Header} | Original: {Original} -> New: {New}", header, raw, formatted);
+                return ToCsvField(formatted);
+            }
+
+            return ToCsvField(raw);
         }
 
         private IExcelDataReader CreateExcelReader(Stream s, string ext)
