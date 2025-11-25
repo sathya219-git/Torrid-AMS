@@ -173,7 +173,7 @@ namespace IncidentAPI.Controllers
         }
 
         [HttpGet("countbypriority")]
-        public async Task<IActionResult> GetIncidentCountByPriority([FromQuery] DashboardFilterRequest request)
+             public async Task<IActionResult> GetIncidentCountByPriority([FromQuery] DashboardFilterRequest request)
         {
             var filter = new IncidentFilter
             {
@@ -185,17 +185,14 @@ namespace IncidentAPI.Controllers
                 AssignedToName = request.AssignedToName,
                 State = request.State
             };
-
+        
             var result = await _incidentService.GetIncidentCountByPriorityAsync(filter);
-            var response = new IncidentCountByPriorityGroupedResponse();
-
+            var response = new IncidentCountByPriorityGroupedResponse();        
             if (result == null || !result.Any())
-                return Ok(response);
-
+                return Ok(response);        
             foreach (var group in result.GroupBy(r => r.Priority))
             {
-                var first = group.First();
-
+                var first = group.First();        
                 var stateCount = new IncidentStateCount
                 {
                     TotalCount = first.TotalCount,
@@ -207,18 +204,17 @@ namespace IncidentAPI.Controllers
                     Resolved = group.FirstOrDefault(g => g.State.Equals("Resolved", StringComparison.OrdinalIgnoreCase))?.IncidentCount ?? 0
                 };
 
+                var totalBreachedForPriority = group.Sum(g => g.BreachedCount);        
                 response.Priority[group.Key] = new PriorityData
                 {
                     Details = new List<IncidentStateCount> { stateCount },
                     AvgResolvedTime = first.AvgResolvedTime,
                     TotalResolvedTime = first.TotalResolvedTime,
-                    BreachedCount = first.BreachedCount
+                    BreachedCount = totalBreachedForPriority
                 };
-            }
-
+            }        
             return Ok(response);
         }
-
 
         [HttpGet("detailsbypriority")]
         public async Task<IActionResult> GetIncidentDetailsByPriority([FromQuery] DashboardFilterPaginatedRequest request)
