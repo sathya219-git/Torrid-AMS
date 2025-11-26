@@ -45,14 +45,13 @@ namespace Incident.Tests.Controllers
         public async Task UpdatePasswordByDefault_ReturnsOk_OnSuccess()
         {
             var svc = new Mock<IAuthService>();
-            svc.Setup(s => s.UpdatePasswordByDefaultAsync("a@b.com", "def", "new", "new"))
+            svc.Setup(s => s.UpdatePasswordByDefaultAsync("def", "new", "new"))
             .ReturnsAsync(new PasswordUpdateResult { Success = true, Message = "Password updated successfully." });
 
             var controller = new AuthController(svc.Object);
 
             var result = await controller.UpdatePasswordByDefault(new UpdatePasswordRequest
             {
-                EmailID = "a@b.com",
                 DefaultPassword = "def",
                 NewPassword = "new",
                 ConfirmNewPassword = "new"

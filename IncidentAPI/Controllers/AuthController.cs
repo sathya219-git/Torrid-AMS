@@ -44,7 +44,6 @@ namespace Incident.API.Controllers
                 return BadRequest(ModelState);
 
             var result = await _authService.UpdatePasswordByDefaultAsync(
-                request.EmailID,
                 request.DefaultPassword,
                 request.NewPassword,
                 request.ConfirmNewPassword

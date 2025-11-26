@@ -42,12 +42,12 @@ namespace Incident.Tests.Services
             var repo = new Mock<IAuthRepository>();
             var logger = new Mock<ILogger<AuthService>>();
 
-            repo.Setup(r => r.UpdatePasswordByDefaultAsync("a@b.com", "def", "new", "new"))
+            repo.Setup(r => r.UpdatePasswordByDefaultAsync("def", "new", "new"))
                 .ReturnsAsync(new PasswordUpdateResult { Success = true, Message = "Password updated successfully." });
 
             var svc = new AuthService(repo.Object, logger.Object);
 
-            var result = await svc.UpdatePasswordByDefaultAsync("a@b.com", "def", "new", "new");
+            var result = await svc.UpdatePasswordByDefaultAsync("def", "new", "new");
 
             Assert.True(result.Success);
             Assert.Equal("Password updated successfully.", result.Message);

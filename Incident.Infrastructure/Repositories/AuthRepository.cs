@@ -49,16 +49,14 @@ namespace Incident.Infrastructure.Repositories
         }
         
         public async Task<PasswordUpdateResult> UpdatePasswordByDefaultAsync(
-            string emailId,
             string defaultPassword,
             string newPassword,
             string confirmNewPassword)
         {
-            _logger.LogInformation("Attempting default password update for {Email}", emailId);
+            _logger.LogInformation("Attempting default password update");
 
             using var connection = new SqlConnection(_connectionString);
             var parameters = new DynamicParameters();
-            parameters.Add("@EmailID", emailId);
             parameters.Add("@DefaultPassword", defaultPassword);
             parameters.Add("@NewPassword", newPassword);
             parameters.Add("@ConfirmNewPassword", confirmNewPassword);
@@ -79,7 +77,7 @@ namespace Incident.Infrastructure.Repositories
             }
             catch (SqlException ex)
             {
-                _logger.LogWarning(ex, "Failed to update password for {Email}", emailId);
+                _logger.LogWarning(ex, "Failed to update password");
                 return new PasswordUpdateResult
                 {
                     Success = false,
@@ -88,7 +86,7 @@ namespace Incident.Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error updating password for {Email}", emailId);
+                _logger.LogError(ex, "Unexpected error updating password");
                 return new PasswordUpdateResult
                 {
                     Success = false,
