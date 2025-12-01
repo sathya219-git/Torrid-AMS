@@ -105,7 +105,9 @@ namespace IncidentAPI.Controllers
                 FromDate = request.FromDate,
                 ToDate = request.ToDate,
                 Category = request.Category,
+                State = request.State,
                 Priority = request.Priority,
+                AssignmentGroup = request.AssignmentGroup,
                 AssignedToName = request.AssignedToName
             };
 
@@ -115,7 +117,8 @@ namespace IncidentAPI.Controllers
                 ? new List<AssignmentGroupResponse>() 
                 : result.Select(r => new AssignmentGroupResponse
                 {
-                    AssignmentGroupName = r.AssignmentGroupName
+                    AssignmentGroupName = r.AssignmentGroupName,
+                    IncidentCount = r.IncidentCount
                 }).ToList();
 
             return Ok(response);

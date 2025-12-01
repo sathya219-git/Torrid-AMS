@@ -108,9 +108,11 @@ namespace Incident.Infrastructure.Repositories
 
                 parameters.Add("@p_fromDate", filter.FromDate);
                 parameters.Add("@p_toDate", filter.ToDate);
+                parameters.Add("@p_assignmentGroup", filter.AssignmentGroup.ToCsv());
                 parameters.Add("@p_category", filter.Category.ToCsv());
                 parameters.Add("@p_priority", filter.Priority.ToCsv());
                 parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
+                parameters.Add("@p_state", filter.State.ToCsv());
 
                 await connection.OpenAsync();
                 var result = await connection.QueryAsync<AssignmentGroup>(
