@@ -1,11 +1,12 @@
 using Dapper;
 using Incident.Application.Interfaces;
 using Incident.Domain.Models;
-using Microsoft.Data.SqlClient;
+using Npgsql; 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Data;
 using System.Threading.Tasks;
+using System;
 
 namespace Incident.Infrastructure.Repositories
 {
@@ -23,7 +24,7 @@ namespace Incident.Infrastructure.Repositories
         public async Task<User?> LoginAsync(string Email, string password)
         {
             _logger.LogInformation("Attempting login for user {Email}", Email);
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
 
             var parameters = new DynamicParameters();
             parameters.Add("@Email", Email);
@@ -32,18 +33,15 @@ namespace Incident.Infrastructure.Repositories
             try
             {
                 await connection.OpenAsync();
-
                 var result = await connection.QueryFirstOrDefaultAsync<User>(
-                    "sp_Login",
-                    parameters,
-                    commandType: CommandType.StoredProcedure
-                );
-
-                return result ?? new User { Message = "Invalid username or password" };
+                    "SELECT * FROM \"sp_login\"(@Email, @Password)",
+                    parameters
+                );                
+                return result; 
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error executing SP 'sp_Login'");
+                _logger.LogError(ex, "Error executing PostgreSQL function 'sp_login'");
                 throw;
             }
         }
@@ -53,9 +51,7 @@ namespace Incident.Infrastructure.Repositories
             string newPassword,
             string confirmNewPassword)
         {
-            _logger.LogInformation("Attempting default password update");
-
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
             var parameters = new DynamicParameters();
             parameters.Add("@DefaultPassword", defaultPassword);
             parameters.Add("@NewPassword", newPassword);
@@ -63,11 +59,10 @@ namespace Incident.Infrastructure.Repositories
 
             try
             {
-                await connection.OpenAsync();
+                await connection.OpenAsync();            
                 await connection.ExecuteAsync(
-                    "dbo.SP_UpdatePasswordByDefault",
-                    parameters,
-                    commandType: CommandType.StoredProcedure
+                    "SELECT \"sp_updatepasswordbydefault\"(@DefaultPassword, @NewPassword, @ConfirmNewPassword)",
+                    parameters
                 );
                 return new PasswordUpdateResult
                 {
@@ -75,13 +70,13 @@ namespace Incident.Infrastructure.Repositories
                     Message = "Password updated successfully."
                 };
             }
-            catch (SqlException ex)
+            catch (NpgsqlException ex) 
             {
                 _logger.LogWarning(ex, "Failed to update password");
                 return new PasswordUpdateResult
                 {
                     Success = false,
-                    Message = ex.Message
+                    Message = ex.Message 
                 };
             }
             catch (Exception ex)

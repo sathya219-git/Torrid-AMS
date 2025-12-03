@@ -3,9 +3,14 @@ using Dapper;
 using Incident.Application.Filters;
 using Incident.Application.Interfaces;
 using Incident.Domain.Models;
-using Microsoft.Data.SqlClient;
+using Npgsql;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System;
+using System.Linq; 
 
 namespace Incident.Infrastructure.Repositories
 {
@@ -16,67 +21,70 @@ namespace Incident.Infrastructure.Repositories
 
         public FileUploadRepository(IConfiguration cfg, ILogger<FileUploadRepository> logger)
         {
-            _connStr = cfg.GetConnectionString("DefaultConnection") 
-                       ?? throw new InvalidOperationException("DefaultConnection missing");
+            _connStr = cfg.GetConnectionString("DefaultConnection")
+                         ?? throw new InvalidOperationException("DefaultConnection missing");
             _logger = logger;
         }
 
         public async Task<long> SaveFileUploadAsync(string filePath, string fileName, long fileSize)
         {
-            using var conn = new SqlConnection(_connStr);
+            using var conn = new NpgsqlConnection(_connStr);
             var p = new DynamicParameters();
-            p.Add("@FilePath", filePath, DbType.String, size: 1024);
-            p.Add("@FileName", fileName, DbType.String, size: 255);
-            p.Add("@FileSize", fileSize, DbType.Int64);
 
-            _logger.LogInformation("Executing dbo.UploadCSV for {FileName}", fileName);
+            p.Add("FilePath", filePath, DbType.String);
+            p.Add("FileName", fileName, DbType.String);
+            p.Add("FileSize", fileSize, DbType.Int64);
+
+            _logger.LogInformation("Executing sp_UploadCSV for {FileName}", fileName);
 
             var uploadId = await conn.ExecuteScalarAsync<long>(
-                sql: "dbo.sp_UploadCSV",
-                param: p,
-                commandType: CommandType.StoredProcedure);
+                sql: "SELECT \"sp_uploadcsv\"(@FilePath, @FileName, @FileSize)",
+                param: p
+            );
 
             return uploadId;
         }
+
         public async Task<IEnumerable<UploadHistory>> GetAsync(UploadHistoryFilter filter, CancellationToken ct = default)
         {
-            using var conn = new SqlConnection(_connStr);
+            using var conn = new NpgsqlConnection(_connStr);
 
             var p = new DynamicParameters();
-            p.Add("@SearchText", filter.SearchText, DbType.String);
-            p.Add("@SortBy", filter.SortBy, DbType.String);
-            p.Add("@SortDir", filter.SortDir, DbType.String);
-            p.Add("@PageNumber", filter.PageNumber, DbType.Int32);
-            p.Add("@PageSize", filter.PageSize, DbType.Int32);
+            p.Add("SearchText", filter.SearchText);
+            p.Add("SortBy", filter.SortBy);
+            p.Add("SortDir", filter.SortDir);
+            p.Add("PageNumber", filter.PageNumber);
+            p.Add("PageSize", filter.PageSize);
 
-            _logger.LogDebug("EXEC dbo.sp_GetUploadHistory {@p}", new { filter.SearchText, filter.SortBy, filter.SortDir, filter.PageNumber, filter.PageSize });
+            _logger.LogDebug("Calling sp_GetUploadHistory {@p}", new { filter.SearchText, filter.SortBy, filter.SortDir, filter.PageNumber, filter.PageSize });
 
             return await conn.QueryAsync<UploadHistory>(
-                "dbo.sp_GetUploadHistory",
-                p,
-                commandType: CommandType.StoredProcedure);
+                "SELECT * FROM \"sp_getuploadhistory\"(@SearchText, @SortBy, @SortDir, @PageNumber, @PageSize)",
+                p
+            );
         }
-        
-         public async Task<ImportSummary> ExecuteImportAsync(int uploadHistoryId, CancellationToken ct = default)
+
+        public async Task<ImportSummary> ExecuteImportAsync(int uploadHistoryId, CancellationToken ct = default)
         {
-            using var conn = new SqlConnection(_connStr);
+            using var conn = new NpgsqlConnection(_connStr);
             await conn.OpenAsync(ct);
 
             var p = new DynamicParameters();
-            p.Add("@UploadHistoryId", uploadHistoryId, DbType.Int32);
 
-            _logger.LogDebug("Calling dbo.sp_ImportIncidentsFromUpload {@UploadHistoryId}", uploadHistoryId);
+            p.Add("p_upload_id", uploadHistoryId, DbType.Int64);
+
+            _logger.LogDebug("Calling sp_ImportIncidentsFromUpload {@UploadHistoryId}", uploadHistoryId);
 
             try
             {
                 var row = await conn.QuerySingleAsync<ImportSummary>(
-                    sql: "dbo.sp_ImportIncidentsFromUpload",
-                    param: p,
-                    commandType: CommandType.StoredProcedure);
+                    sql: "SELECT * FROM \"sp_importincidentsfromupload\"(@p_upload_id)",
+                    param: p
+                );
 
                 return row;
             }
-            catch (SqlException sqlEx)
+            catch (NpgsqlException sqlEx)
             {
                 _logger.LogError(sqlEx, "SQL error while executing sp_ImportIncidentsFromUpload for id {Id}", uploadHistoryId);
                 throw;
