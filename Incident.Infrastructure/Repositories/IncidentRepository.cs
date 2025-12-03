@@ -205,27 +205,24 @@ namespace Incident.Infrastructure.Repositories
         }
         public async Task<IEnumerable<AssignmentGroup>> GetAssignmentGroupsAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Calling function 'sp_GetAssignmentGroups' with parameters: {@Filter}", filter);
-
+            _logger.LogInformation("Calling function 'sp_GetAssignmentGroups' with parameters: {@Filter}", filter);        
             try
             {
                 using var connection = new NpgsqlConnection(_connectionString);
-                var parameters = new DynamicParameters();
-
+                var parameters = new DynamicParameters();        
                 parameters.Add("@p_fromDate", filter.FromDate);
                 parameters.Add("@p_toDate", filter.ToDate);
                 parameters.Add("@p_assignmentGroup", filter.AssignmentGroup.ToCsv());
                 parameters.Add("@p_category", filter.Category.ToCsv());
-                parameters.Add("@p_priority", filter.Priority.ToCsv());
-                parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
                 parameters.Add("@p_state", filter.State.ToCsv());
-
+                parameters.Add("@p_priority", filter.Priority.ToCsv());
+                parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());        
                 await connection.OpenAsync();
-                var result = await connection.QueryAsync<AssignmentGroup>(
-                    "SELECT * FROM \"sp_getassignmentgroups\"(@p_fromDate, @p_toDate, @p_category, @p_priority, @p_assignedToName)", // Presuming sp_GetAssignmentGroups exists
-                    parameters
-                );
 
+                var result = await connection.QueryAsync<AssignmentGroup>(
+                    "SELECT * FROM \"sp_getassignmentgroups\"(@p_fromDate, @p_toDate, @p_assignmentGroup, @p_category, @p_state, @p_priority, @p_assignedToName)",
+                    parameters
+                );        
                 return result;
             }
             catch (Exception ex)
@@ -234,6 +231,7 @@ namespace Incident.Infrastructure.Repositories
                 throw;
             }
         }
+        
         public async Task<DashboardKpi?> GetDashboardKpisAsync(IncidentFilter filter)
         {
             _logger.LogInformation("Calling function 'sp_GetDashboardKpis' with parameters: {@Filter}", filter);
