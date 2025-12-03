@@ -105,10 +105,32 @@ namespace Incident.Application.Services
         /// </summary>
         private string ConvertToCsvValue(object cell, string header)
         {
+            var unassignedColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Priority", "State", "Category",
+                "Assignment group", "Assigned to",
+                "Updated by", "Task type"
+            };
             if (cell is null)
+            {
+                if (unassignedColumns.Contains(header))
+                {
+                    return ToCsvField("Unassigned");
+                }
                 return "";
-
+            }
+ 
             string raw = cell.ToString()?.Trim() ?? "";
+ 
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                if (unassignedColumns.Contains(header))
+                {
+                   
+                    return ToCsvField("Unassigned");
+                }
+                return "";
+            }
 
             // Attempt to parse and format date
             if (DateTime.TryParse(raw, out var dt))
