@@ -108,7 +108,7 @@ namespace Incident.API.Controllers
                     ID = r.ID,
                     FileName = r.FileName,
                     FileSize = FilterHelper.FormatSize(r.FileSize).ToString(),
-                    UploadedDate = r.UploadedDate
+                    UploadedDate = r.Uploaded_At
                 }).ToList()
             };
 
