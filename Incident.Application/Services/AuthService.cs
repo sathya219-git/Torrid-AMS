@@ -1,5 +1,5 @@
 using Incident.Application.Interfaces;
-using Incident.Domain.Models;
+using Incident.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 

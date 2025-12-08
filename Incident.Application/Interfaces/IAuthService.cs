@@ -1,4 +1,4 @@
-using Incident.Domain.Models;
+using Incident.Domain.Entities;
 using System.Threading.Tasks;
 
 namespace Incident.Application.Interfaces

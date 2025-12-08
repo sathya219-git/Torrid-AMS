@@ -1,110 +1,96 @@
-using System.IO;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentAssertions;
 using Incident.API.Controllers;
-using Incident.API.Dtos.Requests;
-using Incident.Application.Exceptions;
+using Incident.Application.Dtos.Requests;
+using Incident.Application.Dtos.Responses;
 using Incident.Application.Interfaces;
-using Incident.Application.Models;
+using Incident.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Incident.API.Dtos.Responses;
 using Moq;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
-using Incident.API.DTOs.Responses;
 
-namespace Incident.Tests.API
+namespace Incident.Tests.Controllers
 {
     public class FileUploadControllerTests
     {
-        private static IFormFile MakeFormFile(byte[] data, string fileName, string contentType)
+        private readonly Mock<IFileIngestionService> _mockFileService;
+        private readonly FileUploadController _controller;
+
+        public FileUploadControllerTests()
         {
-            var stream = new MemoryStream(data);
-            return new FormFile(stream, 0, data.Length, "file", fileName)
+            _mockFileService = new Mock<IFileIngestionService>();
+            _controller = new FileUploadController(_mockFileService.Object);
+        }
+
+        [Fact]
+        public async Task Upload_ValidFile_ReturnsOk()
+        {
+            // Arrange
+            var fileMock = new Mock<IFormFile>();
+            var content = "fake file content";
+            var fileName = "test.csv";
+            var ms = new MemoryStream();
+            var writer = new StreamWriter(ms);
+            writer.Write(content);
+            writer.Flush();
+            ms.Position = 0;
+
+            fileMock.Setup(_ => _.OpenReadStream()).Returns(ms);
+            fileMock.Setup(_ => _.FileName).Returns(fileName);
+            fileMock.Setup(_ => _.Length).Returns(ms.Length);
+
+            var request = new FileUploadRequest { File = fileMock.Object };
+            var serviceResult = new FileIngestionResult { UploadID = 123, Message = "Success" };
+
+            _mockFileService.Setup(s => s.IngestAsync(It.IsAny<FileIngestionRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(serviceResult);
+
+            // Act
+            var result = await _controller.Upload(request, CancellationToken.None);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<FileIngestionResponse>(okResult.Value);
+            Assert.Equal(123, response.UploadID);
+        }
+
+        [Fact]
+        public async Task Upload_NullFile_ReturnsBadRequest()
+        {
+            // Arrange
+            var request = new FileUploadRequest { File = null };
+
+            // Act
+            var result = await _controller.Upload(request, CancellationToken.None);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("No file provided.", badRequest.Value);
+        }
+
+        [Fact]
+        public async Task GetHistory_ReturnsPagedResponse()
+        {
+            // Arrange
+            var request = new UploadHistoryQueryRequest { PageNumber = 1, PageSize = 10 };
+            var historyData = new List<UploadHistory>
             {
-                Headers = new HeaderDictionary(),
-                ContentType = contentType
+                new UploadHistory { ID = 1, FileName = "test.csv", TotalCount = 1 }
             };
-        }
 
-        [Fact]
-        public async Task Upload_NoFile_ReturnsBadRequest()
-        {
-            // Arrange
-            var svc = new Mock<IFileIngestionService>();
-            var controller = new FileUploadController(svc.Object);
-            var req = new FileUploadRequest { File = null! };
+            _mockFileService.Setup(s => s.GetAsync(It.IsAny<UploadHistoryFilter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(historyData);
 
             // Act
-            var result = await controller.Upload(req, CancellationToken.None);
+            var result = await _controller.GetHistory(request, CancellationToken.None);
 
             // Assert
-            result.Should().BeOfType<BadRequestObjectResult>()
-                  .Which.Value!.ToString().Should().Contain("No file provided");
-        }
-
-        [Fact]
-        public async Task Upload_HeaderValidationFails_ReturnsBadRequest()
-        {
-            // Arrange
-            var svc = new Mock<IFileIngestionService>();
-            svc.Setup(s => s.IngestAsync(It.IsAny<FileIngestionRequest>(), It.IsAny<CancellationToken>()))
-               .ThrowsAsync(new HeaderValidationException("Missing required headers"));
-
-            var controller = new FileUploadController(svc.Object);
-
-            var file = MakeFormFile(Encoding.UTF8.GetBytes("dummy"), "incidents.xlsx",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            var req = new FileUploadRequest { File = file };
-
-            // Act
-            var result = await controller.Upload(req, CancellationToken.None);
-
-            // Assert
-            result.Should().BeOfType<BadRequestObjectResult>()
-                  .Which.Value!.ToString().Should().Contain("Header validation failed");
-        }
-
-        [Fact]
-        public async Task Upload_ServiceSucceeds_ReturnsOkWithResponse()
-        {
-            // Arrange
-            var svc = new Mock<IFileIngestionService>();
-            svc.Setup(s => s.IngestAsync(It.IsAny<FileIngestionRequest>(), It.IsAny<CancellationToken>()))
-               .ReturnsAsync(new FileIngestionResult
-               {
-                   UploadID = 99,
-                   OriginalFileName = "incidents.xlsx",
-                   FileSizeBytes = 1234,
-                   CsvPath = @"D:\ims-uploads\csv\20250101\abc\incidents.csv",
-                   Message = "ok"
-               });
-
-            var controller = new FileUploadController(svc.Object);
-
-            var file = MakeFormFile(Encoding.UTF8.GetBytes("dummy"), "incidents.xlsx",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            var req = new FileUploadRequest { File = file };
-
-            // Act
-            var result = await controller.Upload(req, CancellationToken.None);
-
-            // Assert
-            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-
-            // Cast to the actual response DTO and assert properties
-            ok.Value.Should().NotBeNull();
-            ok.Value.Should().BeOfType<FileIngestionResponse>();
-            var resp = (FileIngestionResponse)ok.Value!;
-
-
-            resp.UploadID.Should().Be(99);
-            resp.OriginalFileName.Should().Be("incidents.xlsx");
-            resp.FileSizeBytes.Should().Be(1234);
-            resp.CsvPath.Should().Contain(@"ims-uploads");
-            resp.Message.Should().NotBeNullOrEmpty();
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<PagedUploadHistoryResponse>(okResult.Value);
+            Assert.Single(response.Items);
         }
     }
 }

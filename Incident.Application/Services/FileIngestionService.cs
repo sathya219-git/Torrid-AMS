@@ -1,11 +1,10 @@
 using System.Text;
 using ExcelDataReader;
+using Incident.Application.Dtos.Requests;
 using Incident.Application.Exceptions;
-using Incident.Application.Filters;
 using Incident.Application.Interfaces;
-using Incident.Application.Models;
 using Incident.Application.Options;
-using Incident.Domain.Models;
+using Incident.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -30,7 +29,7 @@ namespace Incident.Application.Services
             _logger = logger;
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); // needed for .xls
         }
-        
+
         public async Task<FileIngestionResult> IngestAsync(FileIngestionRequest request, CancellationToken ct = default)
         {
             if (request is null || request.Length <= 0)
@@ -72,7 +71,6 @@ namespace Incident.Application.Services
             var headers = headerRow.ItemArray.Select(v => v?.ToString()?.Trim() ?? string.Empty).ToList();
             ValidateHeaders(headers);
 
-            // CSV write
             using (var fs = new FileStream(csvPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             using (var sw = new StreamWriter(fs, new UTF8Encoding(false)))
             {
@@ -100,46 +98,41 @@ namespace Incident.Application.Services
             };
         }
 
-        /// <summary>
-        /// Convert cell values to CSV field including date formatting
-        /// </summary>
         private string ConvertToCsvValue(object cell, string header)
         {
             var unassignedColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "Priority", "State", "Category",
-                "Assignment group", "Assigned to",
+                "Priority", "State", "Category", 
+                "Assignment group", "Assigned to", 
                 "Updated by", "Task type"
             };
             if (cell is null)
             {
                 if (unassignedColumns.Contains(header))
                 {
-                    return ToCsvField("Unassigned");
+                    return ToCsvField("Unassigned"); 
                 }
-                return "";
+                return ""; 
             }
- 
+
             string raw = cell.ToString()?.Trim() ?? "";
- 
+
             if (string.IsNullOrWhiteSpace(raw))
             {
                 if (unassignedColumns.Contains(header))
                 {
                    
-                    return ToCsvField("Unassigned");
+                    return ToCsvField("Unassigned"); 
                 }
-                return "";
+                return ""; 
             }
 
-            // Attempt to parse and format date
             if (DateTime.TryParse(raw, out var dt))
             {
-                string formatted = dt.ToString("MM-dd-yyyy HH:mm:ss"); // format you want
+                string formatted = dt.ToString("MM-dd-yyyy HH:mm:ss");
                 _logger.LogInformation("Date Converted | Header: {Header} | Original: {Original} -> New: {New}", header, raw, formatted);
                 return ToCsvField(formatted);
             }
-
             return ToCsvField(raw);
         }
 

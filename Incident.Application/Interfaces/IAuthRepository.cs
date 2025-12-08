@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Incident.Domain.Models;
+using Incident.Domain.Entities;
 
 namespace Incident.Application.Interfaces
 {

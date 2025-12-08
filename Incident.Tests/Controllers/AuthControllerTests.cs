@@ -1,67 +1,91 @@
-using IncidentAPI.Controllers;
-using Incident.API.Dtos.Requests;
-using Incident.API.Dtos.Responses;
-using Incident.Application.Models;
-using Incident.Domain.Models;
+using Incident.API.Controllers;
+using Incident.Application.Dtos.Requests;
+using Incident.Application.Dtos.Responses;
+using Incident.Application.Interfaces;
+using Incident.Domain.Entities; 
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using System.Threading.Tasks;
 using Xunit;
-using Incident.Application.Services;
-using Incident.Application.Interfaces;
-using Incident.API.Controllers;
 
 namespace Incident.Tests.Controllers
 {
     public class AuthControllerTests
     {
-        [Fact]
-        public async Task Login_ReturnsOk_WithUser()
+        private readonly Mock<IAuthService> _mockAuthService;
+        private readonly Mock<ITokenService> _mockTokenService;
+        private readonly AuthController _controller;
+
+        public AuthControllerTests()
         {
-            var mockService = new Mock<IAuthService>();
-            mockService.Setup(s => s.LoginAsync("john@example.com", "password"))
-                       .ReturnsAsync(new User
-                       {
-                           UserID = 1,
-                           Username = "john",
-                           Email = "john@example.com",
-                           Role = "Admin",
-                           Message = "Login successful"
-                       });
+            _mockAuthService = new Mock<IAuthService>();
+            _mockTokenService = new Mock<ITokenService>();
+            _controller = new AuthController(_mockAuthService.Object, _mockTokenService.Object);
+        }
 
-            var controller = new AuthController(mockService.Object);
+        [Fact]
+        public async Task Login_ValidCredentials_ReturnsOkWithToken()
+        {
+            // Arrange
+            var request = new LoginRequest { Email = "test@test.com", Password = "password" };
+            var user = new User { Username = "admin", Email = "test@test.com", Message = "Login successful" };
+            var token = "generated-jwt-token";
 
-            var request = new LoginRequest { Email = "john@example.com", Password = "password" };
+            _mockAuthService.Setup(s => s.LoginAsync(request.Email, request.Password))
+                .ReturnsAsync(user);
+            _mockTokenService.Setup(s => s.GenerateToken(user, "Admin"))
+                .Returns(token);
 
-            var result = await controller.Login(request);
+            // Act
+            var result = await _controller.Login(request);
 
+            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsType<LoginResponse>(okResult.Value);
-
-            Assert.Equal("Login successful", response.Message);
-            Assert.Equal(1, response.UserID);
+            
+            Assert.Equal(token, response.Token);
+            Assert.Equal("Admin", response.Role); 
         }
-            [Fact]
-        public async Task UpdatePasswordByDefault_ReturnsOk_OnSuccess()
+
+        [Fact]
+        public async Task Login_InvalidUser_ReturnsUnauthorized()
         {
-            var svc = new Mock<IAuthService>();
-            svc.Setup(s => s.UpdatePasswordByDefaultAsync("def", "new", "new"))
-            .ReturnsAsync(new PasswordUpdateResult { Success = true, Message = "Password updated successfully." });
+            // Arrange
+            var request = new LoginRequest { Email = "wrong@test.com", Password = "wrong" };
+            
+            _mockAuthService.Setup(s => s.LoginAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync((User)null); // Service returns null
 
-            var controller = new AuthController(svc.Object);
+            // Act
+            var result = await _controller.Login(request);
 
-            var result = await controller.UpdatePasswordByDefault(new UpdatePasswordRequest
-            {
-                DefaultPassword = "def",
-                NewPassword = "new",
-                ConfirmNewPassword = "new"
-            });
+            // Assert
+            var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
+            Assert.Equal("Invalid credentials.", unauthorizedResult.Value);
+        }
 
-            var ok = Assert.IsType<OkObjectResult>(result);
-            var body = Assert.IsType<UpdatePasswordResponse>(ok.Value);
+        [Fact]
+        public async Task UpdatePassword_Success_ReturnsOk()
+        {
+            // Arrange
+            var request = new UpdatePasswordRequest 
+            { 
+                DefaultPassword = "old", 
+                NewPassword = "new", 
+                ConfirmNewPassword = "new" 
+            };
+            
+            var serviceResult = new PasswordUpdateResult { Success = true, Message = "Updated" };
 
-            Assert.True(body.Success);
-            Assert.Equal("Password updated successfully.", body.Message);
+            _mockAuthService.Setup(s => s.UpdatePasswordByDefaultAsync("old", "new", "new"))
+                .ReturnsAsync(serviceResult);
+
+            // Act
+            var result = await _controller.UpdatePasswordByDefault(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<UpdatePasswordResponse>(okResult.Value);
+            Assert.True(response.Success);
         }
     }
 }

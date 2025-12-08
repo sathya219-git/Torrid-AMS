@@ -1,7 +1,6 @@
 using Incident.Application.Interfaces;
-using Incident.Application.Models;
 using Incident.Application.Services;
-using Incident.Domain.Models;
+using Incident.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Threading.Tasks;
@@ -11,46 +10,51 @@ namespace Incident.Tests.Services
 {
     public class AuthServiceTests
     {
-        [Fact]
-        public async Task LoginAsync_ReturnsUser_OnSuccess()
+        private readonly Mock<IAuthRepository> _mockRepo;
+        private readonly Mock<ILogger<AuthService>> _mockLogger;
+        private readonly AuthService _service;
+
+        public AuthServiceTests()
         {
-            var mockRepo = new Mock<IAuthRepository>();
-            var mockLogger = new Mock<ILogger<AuthService>>();
-
-            mockRepo.Setup(r => r.LoginAsync("john", "password"))
-                    .ReturnsAsync(new User
-                    {
-                        UserID = 1,
-                        Username = "john",
-                        Email = "john@example.com",
-                        Role = "Admin",
-                        Message = "Login successful"
-                    });
-
-            var service = new AuthService(mockRepo.Object, mockLogger.Object);
-
-            var result = await service.LoginAsync("john", "password");
-
-            Assert.NotNull(result);
-            Assert.Equal("john", result.Username);
-            Assert.Equal("Admin", result.Role);
+            _mockRepo = new Mock<IAuthRepository>();
+            _mockLogger = new Mock<ILogger<AuthService>>();
+            _service = new AuthService(_mockRepo.Object, _mockLogger.Object);
         }
 
         [Fact]
-        public async Task UpdatePasswordByDefaultAsync_ReturnsSuccess_WhenRepoSucceeds()
+        public async Task LoginAsync_ValidCredentials_ReturnsUser()
         {
-            var repo = new Mock<IAuthRepository>();
-            var logger = new Mock<ILogger<AuthService>>();
+            // Arrange
+            string email = "test@test.com";
+            string password = "password";
+            var expectedUser = new User { Email = email, Username = "admin" };
 
-            repo.Setup(r => r.UpdatePasswordByDefaultAsync("def", "new", "new"))
-                .ReturnsAsync(new PasswordUpdateResult { Success = true, Message = "Password updated successfully." });
+            _mockRepo.Setup(r => r.LoginAsync(email, password))
+                .ReturnsAsync(expectedUser);
 
-            var svc = new AuthService(repo.Object, logger.Object);
+            // Act
+            var result = await _service.LoginAsync(email, password);
 
-            var result = await svc.UpdatePasswordByDefaultAsync("def", "new", "new");
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(expectedUser.Email, result.Email);
+            _mockRepo.Verify(r => r.LoginAsync(email, password), Times.Once);
+        }
 
+        [Fact]
+        public async Task UpdatePassword_CallsRepository()
+        {
+            // Arrange
+            var resultObj = new PasswordUpdateResult { Success = true };
+            _mockRepo.Setup(r => r.UpdatePasswordByDefaultAsync("old", "new", "new"))
+                .ReturnsAsync(resultObj);
+
+            // Act
+            var result = await _service.UpdatePasswordByDefaultAsync("old", "new", "new");
+
+            // Assert
             Assert.True(result.Success);
-            Assert.Equal("Password updated successfully.", result.Message);
+            _mockRepo.Verify(r => r.UpdatePasswordByDefaultAsync("old", "new", "new"), Times.Once);
         }
     }
 }

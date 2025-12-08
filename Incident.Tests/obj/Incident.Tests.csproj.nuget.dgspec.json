@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\IncidentSolution\\Incident.Tests\\Incident.Tests.csproj": {}
+    "D:\\Torrid\\Torrid-AMS\\Incident.Tests\\Incident.Tests.csproj": {}
   },
   "projects": {
-    "D:\\IncidentSolution\\Incident.Application\\Incident.Application.csproj": {
+    "D:\\Torrid\\Torrid-AMS\\Incident.Application\\Incident.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\IncidentSolution\\Incident.Application\\Incident.Application.csproj",
+        "projectUniqueName": "D:\\Torrid\\Torrid-AMS\\Incident.Application\\Incident.Application.csproj",
         "projectName": "Incident.Application",
-        "projectPath": "D:\\IncidentSolution\\Incident.Application\\Incident.Application.csproj",
+        "projectPath": "D:\\Torrid\\Torrid-AMS\\Incident.Application\\Incident.Application.csproj",
         "packagesPath": "C:\\Users\\rohitkumar.chandel\\.nuget\\packages\\",
-        "outputPath": "D:\\IncidentSolution\\Incident.Application\\obj\\",
+        "outputPath": "D:\\Torrid\\Torrid-AMS\\Incident.Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -32,8 +32,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "D:\\IncidentSolution\\Incident.Domain\\Incident.Domain.csproj": {
-                "projectPath": "D:\\IncidentSolution\\Incident.Domain\\Incident.Domain.csproj"
+              "D:\\Torrid\\Torrid-AMS\\Incident.Domain\\Incident.Domain.csproj": {
+                "projectPath": "D:\\Torrid\\Torrid-AMS\\Incident.Domain\\Incident.Domain.csproj"
               }
             }
           }
@@ -54,9 +54,37 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "ClosedXML": {
+              "target": "Package",
+              "version": "[0.105.0, )"
+            },
+            "ExcelDataReader": {
+              "target": "Package",
+              "version": "[3.8.0, )"
+            },
+            "ExcelDataReader.DataSet": {
+              "target": "Package",
+              "version": "[3.8.0, )"
+            },
+            "Microsoft.AspNetCore.Http.Features": {
+              "target": "Package",
+              "version": "[5.0.17, )"
+            },
             "Microsoft.Extensions.Logging.Abstractions": {
               "target": "Package",
               "version": "[9.0.10, )"
+            },
+            "Microsoft.Extensions.Options": {
+              "target": "Package",
+              "version": "[9.0.10, )"
+            },
+            "Microsoft.IdentityModel.Tokens": {
+              "target": "Package",
+              "version": "[8.15.0, )"
+            },
+            "System.IdentityModel.Tokens.Jwt": {
+              "target": "Package",
+              "version": "[8.15.0, )"
             }
           },
           "imports": [
@@ -79,14 +107,14 @@
         }
       }
     },
-    "D:\\IncidentSolution\\Incident.Domain\\Incident.Domain.csproj": {
+    "D:\\Torrid\\Torrid-AMS\\Incident.Domain\\Incident.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\IncidentSolution\\Incident.Domain\\Incident.Domain.csproj",
+        "projectUniqueName": "D:\\Torrid\\Torrid-AMS\\Incident.Domain\\Incident.Domain.csproj",
         "projectName": "Incident.Domain",
-        "projectPath": "D:\\IncidentSolution\\Incident.Domain\\Incident.Domain.csproj",
+        "projectPath": "D:\\Torrid\\Torrid-AMS\\Incident.Domain\\Incident.Domain.csproj",
         "packagesPath": "C:\\Users\\rohitkumar.chandel\\.nuget\\packages\\",
-        "outputPath": "D:\\IncidentSolution\\Incident.Domain\\obj\\",
+        "outputPath": "D:\\Torrid\\Torrid-AMS\\Incident.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -144,14 +172,14 @@
         }
       }
     },
-    "D:\\IncidentSolution\\Incident.Infrastructure\\Incident.Infrastructure.csproj": {
+    "D:\\Torrid\\Torrid-AMS\\Incident.Infrastructure\\Incident.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\IncidentSolution\\Incident.Infrastructure\\Incident.Infrastructure.csproj",
+        "projectUniqueName": "D:\\Torrid\\Torrid-AMS\\Incident.Infrastructure\\Incident.Infrastructure.csproj",
         "projectName": "Incident.Infrastructure",
-        "projectPath": "D:\\IncidentSolution\\Incident.Infrastructure\\Incident.Infrastructure.csproj",
+        "projectPath": "D:\\Torrid\\Torrid-AMS\\Incident.Infrastructure\\Incident.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\rohitkumar.chandel\\.nuget\\packages\\",
-        "outputPath": "D:\\IncidentSolution\\Incident.Infrastructure\\obj\\",
+        "outputPath": "D:\\Torrid\\Torrid-AMS\\Incident.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -172,11 +200,11 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "D:\\IncidentSolution\\Incident.Application\\Incident.Application.csproj": {
-                "projectPath": "D:\\IncidentSolution\\Incident.Application\\Incident.Application.csproj"
+              "D:\\Torrid\\Torrid-AMS\\Incident.Application\\Incident.Application.csproj": {
+                "projectPath": "D:\\Torrid\\Torrid-AMS\\Incident.Application\\Incident.Application.csproj"
               },
-              "D:\\IncidentSolution\\Incident.Domain\\Incident.Domain.csproj": {
-                "projectPath": "D:\\IncidentSolution\\Incident.Domain\\Incident.Domain.csproj"
+              "D:\\Torrid\\Torrid-AMS\\Incident.Domain\\Incident.Domain.csproj": {
+                "projectPath": "D:\\Torrid\\Torrid-AMS\\Incident.Domain\\Incident.Domain.csproj"
               }
             }
           }
@@ -201,10 +229,6 @@
               "target": "Package",
               "version": "[2.1.66, )"
             },
-            "Microsoft.Data.SqlClient": {
-              "target": "Package",
-              "version": "[6.1.2, )"
-            },
             "Microsoft.Extensions.Configuration": {
               "target": "Package",
               "version": "[9.0.10, )"
@@ -216,6 +240,10 @@
             "Microsoft.Extensions.Logging.Abstractions": {
               "target": "Package",
               "version": "[9.0.10, )"
+            },
+            "Npgsql": {
+              "target": "Package",
+              "version": "[10.0.0, )"
             }
           },
           "imports": [
@@ -238,14 +266,14 @@
         }
       }
     },
-    "D:\\IncidentSolution\\Incident.Tests\\Incident.Tests.csproj": {
+    "D:\\Torrid\\Torrid-AMS\\Incident.Tests\\Incident.Tests.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\IncidentSolution\\Incident.Tests\\Incident.Tests.csproj",
+        "projectUniqueName": "D:\\Torrid\\Torrid-AMS\\Incident.Tests\\Incident.Tests.csproj",
         "projectName": "Incident.Tests",
-        "projectPath": "D:\\IncidentSolution\\Incident.Tests\\Incident.Tests.csproj",
+        "projectPath": "D:\\Torrid\\Torrid-AMS\\Incident.Tests\\Incident.Tests.csproj",
         "packagesPath": "C:\\Users\\rohitkumar.chandel\\.nuget\\packages\\",
-        "outputPath": "D:\\IncidentSolution\\Incident.Tests\\obj\\",
+        "outputPath": "D:\\Torrid\\Torrid-AMS\\Incident.Tests\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -266,11 +294,11 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "D:\\IncidentSolution\\Incident.Application\\Incident.Application.csproj": {
-                "projectPath": "D:\\IncidentSolution\\Incident.Application\\Incident.Application.csproj"
+              "D:\\Torrid\\Torrid-AMS\\Incident.Application\\Incident.Application.csproj": {
+                "projectPath": "D:\\Torrid\\Torrid-AMS\\Incident.Application\\Incident.Application.csproj"
               },
-              "D:\\IncidentSolution\\IncidentAPI\\IncidentAPI.csproj": {
-                "projectPath": "D:\\IncidentSolution\\IncidentAPI\\IncidentAPI.csproj"
+              "D:\\Torrid\\Torrid-AMS\\IncidentAPI\\IncidentAPI.csproj": {
+                "projectPath": "D:\\Torrid\\Torrid-AMS\\IncidentAPI\\IncidentAPI.csproj"
               }
             }
           }
@@ -336,14 +364,14 @@
         }
       }
     },
-    "D:\\IncidentSolution\\IncidentAPI\\IncidentAPI.csproj": {
+    "D:\\Torrid\\Torrid-AMS\\IncidentAPI\\IncidentAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\IncidentSolution\\IncidentAPI\\IncidentAPI.csproj",
+        "projectUniqueName": "D:\\Torrid\\Torrid-AMS\\IncidentAPI\\IncidentAPI.csproj",
         "projectName": "IncidentAPI",
-        "projectPath": "D:\\IncidentSolution\\IncidentAPI\\IncidentAPI.csproj",
+        "projectPath": "D:\\Torrid\\Torrid-AMS\\IncidentAPI\\IncidentAPI.csproj",
         "packagesPath": "C:\\Users\\rohitkumar.chandel\\.nuget\\packages\\",
-        "outputPath": "D:\\IncidentSolution\\IncidentAPI\\obj\\",
+        "outputPath": "D:\\Torrid\\Torrid-AMS\\IncidentAPI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -364,11 +392,11 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "D:\\IncidentSolution\\Incident.Application\\Incident.Application.csproj": {
-                "projectPath": "D:\\IncidentSolution\\Incident.Application\\Incident.Application.csproj"
+              "D:\\Torrid\\Torrid-AMS\\Incident.Application\\Incident.Application.csproj": {
+                "projectPath": "D:\\Torrid\\Torrid-AMS\\Incident.Application\\Incident.Application.csproj"
               },
-              "D:\\IncidentSolution\\Incident.Infrastructure\\Incident.Infrastructure.csproj": {
-                "projectPath": "D:\\IncidentSolution\\Incident.Infrastructure\\Incident.Infrastructure.csproj"
+              "D:\\Torrid\\Torrid-AMS\\Incident.Infrastructure\\Incident.Infrastructure.csproj": {
+                "projectPath": "D:\\Torrid\\Torrid-AMS\\Incident.Infrastructure\\Incident.Infrastructure.csproj"
               }
             }
           }
@@ -389,6 +417,10 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[9.0.11, )"
+            },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[9.0.0, )"

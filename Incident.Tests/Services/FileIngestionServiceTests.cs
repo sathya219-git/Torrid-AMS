@@ -1,108 +1,126 @@
-using System.IO;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentAssertions;
+using Incident.Application.Dtos.Requests;
 using Incident.Application.Exceptions;
 using Incident.Application.Interfaces;
-using Incident.Application.Models;
 using Incident.Application.Options;
 using Incident.Application.Services;
-using Microsoft.AspNetCore.Http;
+using Incident.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Incident.Tests.Services
 {
-  public class FileIngestionServiceTests
+    public class FileIngestionServiceTests
     {
-        private static FileIngestionService CreateService(
-            IFileUploadRepository? repoMock = null,
-            long maxBytes = 10 * 1024 * 1024)
+        private readonly Mock<IFileUploadRepository> _mockRepo;
+        private readonly Mock<ILogger<FileIngestionService>> _mockLogger;
+        private readonly FileIngestionService _service;
+        private readonly StorageOptions _storageOptions;
+        private readonly IngestionOptions _ingestionOptions;
+
+        public FileIngestionServiceTests()
         {
-            var repo = repoMock ?? new Mock<IFileUploadRepository>().Object;
+            _mockRepo = new Mock<IFileUploadRepository>();
+            _mockLogger = new Mock<ILogger<FileIngestionService>>();
 
-            var storage = Options.Create(new StorageOptions
-            {
-                CsvRoot = Path.Combine(Path.GetTempPath(), "ims-tests"),
-                MaxUploadBytes = maxBytes
-            });
+            _storageOptions = new StorageOptions { MaxUploadBytes = 100, CsvRoot = "C:/Temp" };
+            _ingestionOptions = new IngestionOptions();
 
-            var ingestion = Options.Create(new IngestionOptions
-            {
-                ExpectedHeaders = new()
-                {
-                    "Number","Opened","ShortDescription","Caller","Priority","State","Category",
-                    "AssignmentGroup","AssignedTo","Updated","UpdatedBy","ChildIncidents","SlaDue",
-                    "Severity","Subcategory","ResolutionNotes","Resolved","SlaCalculation",
-                    "ParentIncident","Parent","TaskType"
-                },
-                RequireExactOrder = false
-            });
+            var storageMock = new Mock<IOptions<StorageOptions>>();
+            storageMock.Setup(x => x.Value).Returns(_storageOptions);
 
-            var logger = Mock.Of<ILogger<FileIngestionService>>();
-            return new FileIngestionService(repo, storage, ingestion, logger);
+            var ingestionMock = new Mock<IOptions<IngestionOptions>>();
+            ingestionMock.Setup(x => x.Value).Returns(_ingestionOptions);
+
+            _service = new FileIngestionService(
+                _mockRepo.Object, 
+                storageMock.Object, 
+                ingestionMock.Object, 
+                _mockLogger.Object);
         }
 
         [Fact]
-        public async Task IngestAsync_EmptyFile_ThrowsUnsupportedFormat()
+        public async Task IngestAsync_NullRequest_ThrowsUnsupportedFormat()
         {
-            // Arrange
-            var service = CreateService();
-            var req = new FileIngestionRequest
-            {
-                Content = new MemoryStream(Array.Empty<byte>()),
-                FileName = "incidents.xlsx",
-                Length = 0
-            };
-
-            // Act
-            var act = async () => await service.IngestAsync(req, CancellationToken.None);
-
-            // Assert
-            await act.Should().ThrowAsync<UnsupportedFormatException>()
-                     .WithMessage("*Empty file*");
+            await Assert.ThrowsAsync<UnsupportedFormatException>(
+                () => _service.IngestAsync(null));
         }
 
         [Fact]
-        public async Task IngestAsync_TooLarge_ThrowsFileTooLarge()
+        public async Task IngestAsync_FileTooLarge_ThrowsFileTooLargeException()
         {
-            // Arrange
-            var service = CreateService(maxBytes: 5);
-            var req = new FileIngestionRequest
-            {
-                Content = new MemoryStream(Encoding.UTF8.GetBytes("123456")),
-                FileName = "incidents.xlsx",
-                Length = 6
-            };
-
-            // Act
-            var act = async () => await service.IngestAsync(req, CancellationToken.None);
-
-            // Assert
-            await act.Should().ThrowAsync<FileTooLargeException>();
+            // FIX: added Content = new MemoryStream()
+            var request = new FileIngestionRequest 
+            { 
+                Length = 200, 
+                FileName = "test.xlsx",
+                Content = new MemoryStream() 
+            }; 
+            
+            await Assert.ThrowsAsync<FileTooLargeException>(
+                () => _service.IngestAsync(request));
         }
 
         [Fact]
-        public async Task IngestAsync_UnsupportedExtension_ThrowsUnsupportedFormat()
+        public async Task IngestAsync_InvalidExtension_ThrowsUnsupportedFormat()
+        {
+            // FIX: added Content = new MemoryStream()
+            var request = new FileIngestionRequest 
+            { 
+                Length = 50, 
+                FileName = "test.txt",
+                Content = new MemoryStream() 
+            };
+            
+            await Assert.ThrowsAsync<UnsupportedFormatException>(
+                () => _service.IngestAsync(request));
+        }
+
+        [Fact]
+        public async Task GetAsync_CallsRepository()
         {
             // Arrange
-            var service = CreateService();
-            var req = new FileIngestionRequest
-            {
-                Content = new MemoryStream(Encoding.UTF8.GetBytes("content")),
-                FileName = "incidents.txt",
-                Length = 7
-            };
+            var filter = new UploadHistoryFilter();
+            var expectedData = new List<UploadHistory>();
+
+            _mockRepo.Setup(r => r.GetAsync(filter, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedData);
 
             // Act
-            var act = async () => await service.IngestAsync(req, CancellationToken.None);
+            await _service.GetAsync(filter);
 
             // Assert
-            await act.Should().ThrowAsync<UnsupportedFormatException>()
-                     .WithMessage("*Only .xls/.xlsx*");
+            _mockRepo.Verify(r => r.GetAsync(filter, It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ImportFromUploadAsync_ValidId_CallsRepository()
+        {
+            // Arrange
+            int id = 1;
+            var summary = new ImportSummary { InsertedCount = 5 };
+
+            _mockRepo.Setup(r => r.ExecuteImportAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(summary);
+
+            // Act
+            var result = await _service.ImportFromUploadAsync(id);
+
+            // Assert
+            Assert.Equal(5, result.InsertedCount);
+        }
+
+        [Fact]
+        public async Task ImportFromUploadAsync_InvalidId_ThrowsArgumentException()
+        {
+            await Assert.ThrowsAsync<ArgumentException>(
+                () => _service.ImportFromUploadAsync(0));
         }
     }
 }

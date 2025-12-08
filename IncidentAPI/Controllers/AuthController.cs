@@ -1,7 +1,8 @@
-using Incident.API.Dtos.Requests;
-using Incident.API.Dtos.Responses;
+using Incident.Application.Dtos.Requests;
 using Incident.Application.Interfaces;
+using IncidentAPI.Mappers; 
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace Incident.API.Controllers
 {
@@ -10,38 +11,36 @@ namespace Incident.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly ITokenService _tokenService;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, ITokenService tokenService)
         {
             _authService = authService;
+            _tokenService = tokenService;
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var result = await _authService.LoginAsync(request.Email, request.Password);
-
-            if (result != null)
+            var user = await _authService.LoginAsync(request.Email, request.Password);
+            if (user == null) return Unauthorized("Invalid credentials.");
+            if (user.Message == "Login successful")
             {
-                if (result.Message == "Login successful")
-                    return Ok(new LoginResponse
-                    {
-                        Message = result.Message ?? "Login successful",
-                        UserID = result.UserID,
-                        Username = result.Username,
-                        Email = result.Email,
-                        Role = result.Role
-                    });
-            }
-            return Unauthorized(result);
+                string role = (user.Username == "admin") ? "Admin" : "Standard";
+                user.Role = role;
+                
+                var token = _tokenService.GenerateToken(user, role);
 
+                return Ok(user.ToLoginResponse(token));
+            }
+
+            return Unauthorized(new { message = user.Message });
         }
-        
+
         [HttpPost("resetPassword")]
         public async Task<IActionResult> UpdatePasswordByDefault([FromBody] UpdatePasswordRequest request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var result = await _authService.UpdatePasswordByDefaultAsync(
                 request.DefaultPassword,
@@ -49,13 +48,10 @@ namespace Incident.API.Controllers
                 request.ConfirmNewPassword
             );
 
-            var response = new UpdatePasswordResponse
-            {
-                Success = result.Success,
-                Message = result.Message
-            };
-            if (result.Success)
-                return Ok(response);
+            // MAPPING: One line conversion
+            var response = result.ToResponse();
+
+            if (result.Success) return Ok(response);
 
             return BadRequest(response);
         }

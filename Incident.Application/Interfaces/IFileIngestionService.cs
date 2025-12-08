@@ -1,6 +1,5 @@
-using Incident.Application.Filters;
-using Incident.Application.Models;
-using Incident.Domain.Models;
+using Incident.Application.Dtos.Requests;
+using Incident.Domain.Entities;
 
 
 namespace Incident.Application.Interfaces

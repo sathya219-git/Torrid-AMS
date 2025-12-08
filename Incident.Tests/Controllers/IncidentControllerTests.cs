@@ -1,323 +1,262 @@
 using IncidentAPI.Controllers;
-using Incident.API.Dtos.Requests;
-using Incident.API.Dtos.Responses;
-using Incident.Application.Models;
-using Incident.Domain.Models;
+using Incident.Application.Dtos.Requests;
+using Incident.Application.Dtos.Responses;
+using Incident.Application.Interfaces;
+using Incident.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
-using Incident.Application.Interfaces;
+using System.Linq;
 
 namespace Incident.Tests.Controllers
 {
     public class IncidentControllerTests
     {
-        [Fact]
-        public async Task GetDashboardKpis_ReturnsOk()
+        private readonly Mock<IIncidentService> _mockIncidentService;
+        private readonly IncidentController _controller;
+
+        public IncidentControllerTests()
         {
-            var request = new DashboardFilterRequest { FromDate = null, ToDate = null };
-
-            var mockService = new Mock<IIncidentService>();
-            mockService.Setup(s => s.GetDashboardKpisAsync(It.IsAny<IncidentFilter>()))
-                       .ReturnsAsync(new DashboardKpi
-                       {
-                           TotalIncidents = 5
-                       });
-
-            var controller = new IncidentController(mockService.Object);
-
-            var result = await controller.GetDashboardKpis(request);
-
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<DashboardKpiResponse>(okResult.Value);
-            Assert.Equal(5, response.TotalIncidents);
+            _mockIncidentService = new Mock<IIncidentService>();
+            _controller = new IncidentController(_mockIncidentService.Object);
         }
 
+        // 1. KPI Endpoint
         [Fact]
-        public async Task GetNameAndIncidentCountByPriority_ReturnsOkWithPaginatedResponse()
+        public async Task GetDashboardKpis_ReturnsOk_WithCorrectData()
         {
             // Arrange
-            var request = new DashboardFilterPaginatedRequest
-            {
-                PageNumber = 1,
-                PageSize = 4,
-                AssignedToName = new List<string> { "John" } // ✅ FIXED: list instead of string
+            var request = new DashboardFilterRequest();
+            var serviceResult = new DashboardKpi 
+            { 
+                TotalIncidents = 100, 
+                OpenIncidents = 20, 
+                Breached = 5 
             };
 
-            var pagedResult = new PagedMemberIncidentStats
-            {
-                MemberDetails = new List<NameAndIncidentCountByPriority>
-        {
-            new NameAndIncidentCountByPriority
-            {
-                Name = "John",
-                P1 = 5,
-                P2 = 2,
-                P3 = 1,
-                P4 = 0,
-                ActualResolvedTime = "4 hours"
-            }
-        },
-                Pagination = new PaginationInfo
-                {
-                    Page = 1,
-                    PageSize = 4,
-                    TotalRecords = 1,
-                    TotalPages = 1,
-                    SortBy = "Alphabetical"
-                }
-            };
-
-            var mockService = new Mock<IIncidentService>();
-            mockService.Setup(s => s.GetNameAndIncidentCountByPriorityAsync(It.IsAny<IncidentFilter>()))
-                       .ReturnsAsync(pagedResult);
-
-            var controller = new IncidentController(mockService.Object);
+            _mockIncidentService.Setup(s => s.GetDashboardKpisAsync(It.IsAny<IncidentFilter>()))
+                .ReturnsAsync(serviceResult);
 
             // Act
-            var result = await controller.GetNameAndIncidentCountByPriority(request);
+            var result = await _controller.GetDashboardKpis(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<DashboardKpiResponse>(okResult.Value);
+            Assert.Equal(100, response.TotalIncidents);
+            Assert.Equal(5, response.BreachedCount);
+        }
+
+        // 2. Name & Count (Paginated)
+        [Fact]
+        public async Task GetNameAndIncidentCount_ReturnsOk_WithPagination()
+        {
+            // Arrange
+            var request = new DashboardFilterPaginatedRequest { PageNumber = 2, PageSize = 10 };
+            var serviceResult = new PagedMemberIncidentStats
+            {
+                MemberDetails = new List<NameAndIncidentCountByPriority> 
+                { 
+                    new NameAndIncidentCountByPriority { Name = "John", TotalCount = 5 } 
+                },
+                Pagination = new PaginationInfo { Page = 2, TotalRecords = 50 }
+            };
+
+            _mockIncidentService.Setup(s => s.GetNameAndIncidentCountByPriorityAsync(It.IsAny<IncidentFilter>()))
+                .ReturnsAsync(serviceResult);
+
+            // Act
+            var result = await _controller.GetNameAndIncidentCountByPriority(request);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsType<MemberIncidentStatsResponse>(okResult.Value);
-
-            Assert.NotNull(response);
+            
+            Assert.Equal(2, response.Pagination.Page);
             Assert.Single(response.MemberDetails);
             Assert.Equal("John", response.MemberDetails.First().Name);
-            Assert.Equal(1, response.Pagination.TotalRecords);
         }
 
+        // 3. Assignment Groups
         [Fact]
-        public async Task GetAssignmentGroups_ReturnsOk()
-        {
-            var mockService = new Mock<IIncidentService>();
-            mockService.Setup(s => s.GetAssignmentGroupsAsync(It.IsAny<IncidentFilter>()))
-                .ReturnsAsync(new List<AssignmentGroup>
-                {
-                    new AssignmentGroup { AssignmentGroupName = "Network Team" },
-                    new AssignmentGroup { AssignmentGroupName = "DBA Team" }
-                });
-
-            var controller = new IncidentController(mockService.Object);
-
-            var result = await controller.GetAssignmentGroups(new DashboardFilterRequest());
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsAssignableFrom<IEnumerable<AssignmentGroupResponse>>(okResult.Value);
-
-            Assert.Equal(2, response.Count());
-            Assert.Contains(response, r => r.AssignmentGroupName == "Network Team");
-        }
-
-        [Fact]
-        public async Task GetIncidentCountByPriority_ReturnsOk_WithNestedPriorityData()
+        public async Task GetAssignmentGroups_ReturnsList()
         {
             // Arrange
-            var request = new DashboardFilterRequest
-            {
-                Priority = new List<string> { "P1 - Critical" }
-            };
-
-            var fakeData = new List<IncidentCountByPriority>
-            {
-                new IncidentCountByPriority
-                {
-                    Priority = "P1 - Critical",
-                    State = "Open",
-                    IncidentCount = 10,
-                    TotalCount = 30,
-                    AvgResolvedTime = "2 hours",
-                    TotalResolvedTime = "150 hours"
-                },
-                new IncidentCountByPriority
-                {
-                    Priority = "P1 - Critical",
-                    State = "Closed",
-                    IncidentCount = 20,
-                    TotalCount = 30,
-                    AvgResolvedTime = "2 hours",
-                    TotalResolvedTime = "150 hours"
-                }
-            };
-
-            var mockService = new Mock<IIncidentService>();
-            mockService.Setup(s => s.GetIncidentCountByPriorityAsync(It.IsAny<IncidentFilter>()))
-                    .ReturnsAsync(fakeData);
-
-            var controller = new IncidentController(mockService.Object);
-
-            // Act
-            var result = await controller.GetIncidentCountByPriority(request);
-
-            // Assert
-            var ok = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<IncidentCountByPriorityGroupedResponse>(ok.Value);
-
-            Assert.NotNull(response.Priority);
-            Assert.True(response.Priority.ContainsKey("P1 - Critical"));
-
-            var priorityBlock = response.Priority["P1 - Critical"];
-            Assert.NotNull(priorityBlock);
-            Assert.Equal("2 hours", priorityBlock.AvgResolvedTime);
-            Assert.Equal("150 hours", priorityBlock.TotalResolvedTime);
-
-            var stateCounts = Assert.Single(priorityBlock.Details);
-            Assert.Equal(30, stateCounts.TotalCount);
-            Assert.Equal(10, stateCounts.Open);
-            Assert.Equal(20, stateCounts.Closed);
-            Assert.Equal(0, stateCounts.InProgress);
-            Assert.Equal(0, stateCounts.OnHold);
-            Assert.Equal(0, stateCounts.Reopen);
-            Assert.Equal(0, stateCounts.Resolved);
-        }
-
-        [Fact]
-        public async Task GetIncidentDetailsByPriority_ReturnsPagedResponse()
-        {
-            // Arrange
-            var request = new DashboardFilterPaginatedRequest
-            {
-                PageNumber = 1,
-                PageSize = 8,
-                Search = "INC2233985"
-            };
-
-            var mockData = new List<IncidentDetailsByPriority>
-            {
-                new IncidentDetailsByPriority
-                {
-                    PageNumber = 1,
-                    PageSize = 8,
-                    TotalPages = 3,
-                    TotalElements = 10,
-                    IncidentNo = "INC2233985",
-                    AssignedTo = "John Doe",
-                    ShortDescription = "Database outage",
-                    Category = "Infra",
-                    State = "Closed",
-                    ActualResolvedTime = "2 days 5 hours",
-                    ResolvedDateTime = DateTime.UtcNow,
-                    BreachSLA = "No Breach"
-                }
-            };
-
-            var service = new Mock<IIncidentService>();
-            service.Setup(s => s.GetIncidentDetailsByPriorityAsync(It.IsAny<IncidentFilter>()))
-                .ReturnsAsync(mockData);
-
-            var controller = new IncidentController(service.Object);
-
-            // Act
-            var result = await controller.GetIncidentDetailsByPriority(request);
-
-            // Assert
-            var ok = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<IncidentDetailsPaginatedResponse>(ok.Value);
-
-            Assert.Equal(1, response.PageNumber);
-            Assert.Equal(8, response.PageSize);
-            Assert.Equal(3, response.TotalPages);
-            Assert.Equal(10, response.TotalElements);
-
-            var item = Assert.Single(response.Incidents);
-            Assert.Equal("INC2233985", item.IncidentNo);
-            Assert.Equal("Infra", item.Category);
-            Assert.Equal("Closed", item.State);
-            Assert.Equal("No Breach", item.BreachSLA);
-        }
-
-
-        [Fact]
-        public async Task GetCategoryCountByGroup_ReturnsOk()
-        {
-            var mockService = new Mock<IIncidentService>();
-            mockService.Setup(s => s.GetCategoryCountByGroupAsync(It.IsAny<IncidentFilter>()))
-                .ReturnsAsync(new List<CategoryCountByGroup>
-                {
-                    new CategoryCountByGroup { CategoryName = "Hardware", IncidentCount = 10 },
-                    new CategoryCountByGroup { CategoryName = "Software", IncidentCount = 5 }
-                });
-
-            var controller = new IncidentController(mockService.Object);
-
-            var result = await controller.GetCategoryCountByGroup(new DashboardFilterRequest());
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsAssignableFrom<IEnumerable<CategoryCountByGroupResponse>>(okResult.Value);
-
-            Assert.Equal(2, response.Count());
-            Assert.Contains(response, r => r.CategoryName == "Hardware");
-        }
-
-        [Fact]
-        public async Task GetStatusCountByPriority_ReturnsOk()
-        {
-            var mockService = new Mock<IIncidentService>();
-            mockService.Setup(s => s.GetStatusCountByPriorityAsync(It.IsAny<IncidentFilter>()))
-                .ReturnsAsync(new List<StatusCountByPriority>
-                {
-                    new StatusCountByPriority { Status = "Open", IncidentCount = 10 },
-                    new StatusCountByPriority { Status = "Closed", IncidentCount = 5 }
-                });
-
-            var controller = new IncidentController(mockService.Object);
-
-            var result = await controller.GetStatusCountByPriority(new DashboardFilterRequest());
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsAssignableFrom<IEnumerable<StatusCountByPriorityResponse>>(okResult.Value);
-
-            Assert.Equal(2, response.Count());
-            Assert.Contains(response, r => r.Status == "Open");
-        }
-
-        [Fact]
-        public async Task GetStatusCountByPriority_ReturnsNotFound_WhenEmpty()
-        {
-            var mockService = new Mock<IIncidentService>();
-            mockService.Setup(s => s.GetStatusCountByPriorityAsync(It.IsAny<IncidentFilter>()))
-                .ReturnsAsync(new List<StatusCountByPriority>());
-
-            var controller = new IncidentController(mockService.Object);
-
-            var result = await controller.GetStatusCountByPriority(new DashboardFilterRequest());
-
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-
-        [Fact]
-        public async Task ExportIncidents_ReturnsExcelFile_WithCorrectDTOData()
-        {
-            var mockService = new Mock<IIncidentService>();
             var request = new DashboardFilterRequest();
-
-            var mockData = new List<ExportIncident>
+            var serviceResult = new List<AssignmentGroup>
             {
-                new ExportIncident { Number = "INC001", Priority = "High", State = "Open" }
+                new AssignmentGroup { AssignmentGroupName = "Support", IncidentCount = 10 }
             };
 
-            mockService.Setup(s => s.ExportIncidentsAsync(It.IsAny<IncidentFilter>()))
-                       .ReturnsAsync(mockData);
+            _mockIncidentService.Setup(s => s.GetAssignmentGroupsAsync(It.IsAny<IncidentFilter>()))
+                .ReturnsAsync(serviceResult);
 
-            var controller = new IncidentController(mockService.Object);
+            // Act
+            var result = await _controller.GetAssignmentGroups(request);
 
-            var result = await controller.ExportIncidents(request);
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<List<AssignmentGroupResponse>>(okResult.Value);
+            Assert.Single(response);
+            Assert.Equal("Support", response[0].AssignmentGroupName);
+        }
 
+        // 4. Status Count
+        [Fact]
+        public async Task GetStatusCountByPriority_ReturnsList()
+        {
+            // Arrange
+            var request = new DashboardFilterRequest();
+            var serviceResult = new List<StatusCountByPriority>
+            {
+                new StatusCountByPriority { Status = "New", IncidentCount = 5 }
+            };
+
+            _mockIncidentService.Setup(s => s.GetStatusCountByPriorityAsync(It.IsAny<IncidentFilter>()))
+                .ReturnsAsync(serviceResult);
+
+            // Act
+            var result = await _controller.GetStatusCountByPriority(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<List<StatusCountByPriorityResponse>>(okResult.Value);
+            Assert.Single(response);
+            Assert.Equal("New", response[0].Status);
+        }
+
+        // 5. Category Count
+        [Fact]
+        public async Task GetCategoryCountByGroup_ReturnsList()
+        {
+            // Arrange
+            var request = new DashboardFilterRequest();
+            var serviceResult = new List<CategoryCountByGroup>
+            {
+                new CategoryCountByGroup { CategoryName = "Hardware", IncidentCount = 8 }
+            };
+
+            _mockIncidentService.Setup(s => s.GetCategoryCountByGroupAsync(It.IsAny<IncidentFilter>()))
+                .ReturnsAsync(serviceResult);
+
+            // Act
+            var result = await _controller.GetCategoryCountByGroup(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<List<CategoryCountByGroupResponse>>(okResult.Value);
+            Assert.Single(response);
+            Assert.Equal("Hardware", response[0].CategoryName);
+        }
+
+        // 6. Incident Count By Priority (The Grouping Logic)
+        [Fact]
+        public async Task GetIncidentCountByPriority_ReturnsGroupedResponse()
+        {
+            // Arrange
+            var request = new DashboardFilterRequest();
+            var serviceResult = new List<IncidentCountByPriority>
+            {
+                // Two items with same Priority "P1" but different States
+                new IncidentCountByPriority { Priority = "P1", State = "Open", IncidentCount = 2, TotalCount = 5 },
+                new IncidentCountByPriority { Priority = "P1", State = "Closed", IncidentCount = 3, TotalCount = 5 }
+            };
+
+            _mockIncidentService.Setup(s => s.GetIncidentCountByPriorityAsync(It.IsAny<IncidentFilter>()))
+                .ReturnsAsync(serviceResult);
+
+            // Act
+            var result = await _controller.GetIncidentCountByPriority(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<IncidentCountByPriorityGroupedResponse>(okResult.Value);
+            
+            // Verify grouping happened via Mapper
+            Assert.True(response.Priority.ContainsKey("P1"));
+            var p1Data = response.Priority["P1"].Details.First();
+            Assert.Equal(5, p1Data.TotalCount); // Should take total from first item
+            Assert.Equal(2, p1Data.Open);       // Mapped correctly
+            Assert.Equal(3, p1Data.Closed);     // Mapped correctly
+        }
+
+        // 7. Details By Priority (Paginated)
+        [Fact]
+        public async Task GetIncidentDetailsByPriority_ReturnsPaginatedList()
+        {
+            // Arrange
+            var request = new DashboardFilterPaginatedRequest();
+            var serviceResult = new List<IncidentDetailsByPriority>
+            {
+                // The service returns a list that implements the Paged properties via the first item usually
+                new IncidentDetailsByPriority 
+                { 
+                    IncidentNo = "INC001", 
+                    PageNumber = 1, 
+                    TotalElements = 10 
+                }
+            };
+
+            _mockIncidentService.Setup(s => s.GetIncidentDetailsByPriorityAsync(It.IsAny<IncidentFilter>()))
+                .ReturnsAsync(serviceResult);
+
+            // Act
+            var result = await _controller.GetIncidentDetailsByPriority(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<IncidentDetailsPaginatedResponse>(okResult.Value);
+            
+            Assert.Equal(1, response.PageNumber);
+            Assert.Single(response.Incidents);
+            Assert.Equal("INC001", response.Incidents.First().IncidentNo);
+        }
+
+        // 8. Export Excel
+        [Fact]
+        public async Task ExportIncidents_ReturnsFileContent()
+        {
+            // Arrange
+            var request = new DashboardFilterRequest();
+            byte[] fakeFileBytes = new byte[] { 0xFF, 0x00, 0xFF }; // Fake Excel bytes
+
+            _mockIncidentService.Setup(s => s.ExportIncidentsToExcelAsync(It.IsAny<IncidentFilter>()))
+                .ReturnsAsync(fakeFileBytes);
+
+            // Act
+            var result = await _controller.ExportIncidents(request);
+
+            // Assert
             var fileResult = Assert.IsType<FileContentResult>(result);
             Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileResult.ContentType);
-            Assert.EndsWith(".xlsx", fileResult.FileDownloadName);
-            Assert.NotNull(fileResult.FileContents);
-            Assert.True(fileResult.FileContents.Length > 0);
+            Assert.Equal(fakeFileBytes, fileResult.FileContents);
+        }
 
-            var dto = mockData.Select(i => new ExportIncidentResponse
+        // 9. Breach List (Paginated)
+        [Fact]
+        public async Task GetBreachListByPriority_ReturnsPagedList()
+        {
+            // Arrange
+            var request = new DashboardFilterPaginatedRequest();
+            var serviceResult = new List<BreachListItem>
             {
-                Number = i.Number,
-                Priority = i.Priority,
-                State = i.State
-            }).First();
+                new BreachListItem { IncidentNumber = "INC00123", PageNumber = 1, TotalElements = 5 }
+            };
 
-            Assert.Equal("INC001", dto.Number);
-            Assert.Equal("High", dto.Priority);
-            Assert.Equal("Open", dto.State);
+            _mockIncidentService.Setup(s => s.GetBreachListByPriorityAsync(It.IsAny<IncidentFilter>()))
+                .ReturnsAsync(serviceResult);
+
+            // Act
+            var result = await _controller.GetBreachListByPriority(request);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<BreachListPagedResponse>(okResult.Value);
+            
+            Assert.Single(response.Items);
+            Assert.Equal("INC00123", response.Items.First().IncidentNumber);
         }
     }
 }

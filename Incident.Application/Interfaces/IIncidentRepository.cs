@@ -1,8 +1,8 @@
-using Incident.Domain.Models;
+using Incident.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Incident.Application.Models;
+using Incident.Application.Dtos.Requests;
 
 namespace Incident.Application.Interfaces
 {

@@ -1,16 +1,15 @@
 using Dapper;
+using Incident.Application.Dtos.Requests;
+using Incident.Application.Helpers; 
 using Incident.Application.Interfaces;
-using Incident.Domain.Models;
-using Incident.Application.Models;
+using Incident.Domain.Entities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Npgsql;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using Npgsql; 
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Incident.Application.Helpers;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Incident.Infrastructure.Repositories
 {
@@ -21,7 +20,8 @@ namespace Incident.Infrastructure.Repositories
 
         public IncidentRepository(IConfiguration configuration, ILogger<IncidentRepository> logger)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string is missing.");
+            _connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Connection string is missing.");
             _logger = logger;
         }
 
@@ -32,6 +32,7 @@ namespace Incident.Infrastructure.Repositories
             var parameters = new DynamicParameters();
             parameters.Add("@p_fromDate", filter.FromDate);
             parameters.Add("@p_toDate", filter.ToDate);
+            // NOTE: If your Postgres function expects text[], use filter.Category?.ToArray() instead of ToCsv()
             parameters.Add("@p_category", filter.Category.ToCsv());
             parameters.Add("@p_assignmentGroup", filter.AssignmentGroup.ToCsv());
             parameters.Add("@p_priority", filter.Priority.ToCsv());
@@ -40,9 +41,11 @@ namespace Incident.Infrastructure.Repositories
             parameters.Add("@p_pageNumber", filter.PageNumber <= 0 ? 1 : filter.PageNumber);
             parameters.Add("@p_pageSize", filter.PageSize < 0 ? 4 : filter.PageSize);
             parameters.Add("@p_sortBy", string.IsNullOrWhiteSpace(filter.SortBy) ? "Name" : filter.SortBy);
-            parameters.Add("@p_sortOrder", string.IsNullOrWhiteSpace(filter.SortBy) ? "ASC" : filter.SortOrder);
+            parameters.Add("@p_sortOrder", string.IsNullOrWhiteSpace(filter.SortOrder) ? "ASC" : filter.SortOrder);
 
             await connection.OpenAsync();
+
+            // Using dynamic mapping requires careful casting
             var results = await connection.QueryAsync<dynamic>(
                 "SELECT * FROM \"sp_nameandincidentcountbypriority\"(@p_fromDate, @p_toDate, @p_category, @p_assignmentGroup, @p_priority, @p_assignedToName, @p_state, @p_pageNumber, @p_pageSize, @p_sortBy, @p_sortOrder)",
                 parameters
@@ -69,24 +72,25 @@ namespace Incident.Infrastructure.Repositories
 
             var memberList = results.Select(r => new NameAndIncidentCountByPriority
             {
-                Name = (string)r.name, 
-                P1 = (int)r.p1,
-                P2 = (int)r.p2,
-                P3 = (int)r.p3,
-                P4 = (int)r.p4,
-                TotalCount = (int)r.totalcount,
-                ActualResolvedTime = (string)r.actualresolvedtime,
-                LastUpdated = r.lastupdated 
+                // SAFE CASTING: Handle DBNull and BigInt (Postgres default for counts)
+                Name = r.name?.ToString(),
+                P1 = Convert.ToInt32(r.p1 ?? 0),
+                P2 = Convert.ToInt32(r.p2 ?? 0),
+                P3 = Convert.ToInt32(r.p3 ?? 0),
+                P4 = Convert.ToInt32(r.p4 ?? 0),
+                TotalCount = Convert.ToInt32(r.totalcount ?? 0), // FIXED: (int)r.totalcount would crash
+                ActualResolvedTime = r.actualresolvedtime?.ToString(),
+                LastUpdated = r.lastupdated
             }).ToList();
 
             var pagination = new PaginationInfo
             {
-                Page = (int)(first.currentpage ?? filter.PageNumber),
-                PageSize = (int)(first.pagesize ?? filter.PageSize),
-                TotalRecords = (int)(first.totalrecords ?? 0), 
-                TotalPages = (int)Math.Ceiling((decimal)(first.totalpages ?? 0)),
-                SortBy = (string)(first.name ?? filter.SortBy ?? "Name"), 
-                SortOrder = (string)(first.sortorder ?? filter.SortOrder ?? "ASC") 
+                Page = Convert.ToInt32(first.currentpage ?? filter.PageNumber),
+                PageSize = Convert.ToInt32(first.pagesize ?? filter.PageSize),
+                TotalRecords = Convert.ToInt32(first.totalrecords ?? 0),
+                TotalPages = Convert.ToInt32(Math.Ceiling((decimal)(first.totalpages ?? 0))),
+                SortBy = (string)(first.name ?? filter.SortBy ?? "Name"),
+                SortOrder = (string)(first.sortorder ?? filter.SortOrder ?? "ASC")
             };
 
             return new PagedMemberIncidentStats
@@ -98,10 +102,8 @@ namespace Incident.Infrastructure.Repositories
 
         public async Task<IEnumerable<IncidentCountByPriority>> GetIncidentCountByPriorityAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Calling function 'sp_incidentcountbypriority' with parameters: {@Filter}", filter);
+            _logger.LogInformation("Calling function 'sp_incidentcountbypriority'");
 
-            try
-            {
                 using var connection = new NpgsqlConnection(_connectionString);
                 var parameters = new DynamicParameters();
 
@@ -114,23 +116,19 @@ namespace Incident.Infrastructure.Repositories
                 parameters.Add("@p_state", filter.State.ToCsv());
 
                 await connection.OpenAsync();
+
+                // Dapper maps BigInt columns to Int properties automatically here, unlike with 'dynamic'
                 var result = await connection.QueryAsync<IncidentCountByPriority>(
                     "SELECT * FROM \"sp_incidentcountbypriority\"(@p_fromDate, @p_toDate, @p_category, @p_assignmentGroup, @p_priority, @p_assignedToName, @p_state)",
                     parameters
                 );
 
                 return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error executing function 'sp_incidentcountbypriority'");
-                throw;
-            }
         }
 
         public async Task<IEnumerable<BreachListItem>> GetBreachListByPriorityAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Executing function 'sp_breachlistbypriority' with parameters: {@Filter}", filter);
+            _logger.LogInformation("Executing function 'sp_breachlistbypriority'");
             using var connection = new NpgsqlConnection(_connectionString);
 
             var parameters = new DynamicParameters();
@@ -148,10 +146,9 @@ namespace Incident.Infrastructure.Repositories
             parameters.Add("@p_sortOrder", string.IsNullOrEmpty(filter.SortOrder) ? "DESC" : filter.SortOrder);
             parameters.Add("@p_incidentNumber", filter.IncidentNumber.ToCsv());
             parameters.Add("@p_actualResolvedTime", filter.ActualResolvedTime.ToCsv());
+
             parameters.Add("@p_breachSLA", filter.BreachSLA.ToCsv());
 
-            try
-            {
                 await connection.OpenAsync();
                 var result = await connection.QueryAsync<BreachListItem>(
                     "SELECT * FROM \"sp_breachlistbypriority\"(@p_fromDate, @p_toDate, @p_category, @p_assignmentGroup, @p_assignedToName, @p_state, @p_search, @p_priority, @p_pageNumber, @p_pageSize, @p_sortBy, @p_sortOrder, @p_incidentNumber, @p_actualResolvedTime, @p_breachSLA)",
@@ -159,18 +156,11 @@ namespace Incident.Infrastructure.Repositories
                 );
 
                 return result;
-            }
-            catch (Exception ex)
-            {
-                // 🎯 CORRECTION: Update logger message
-                _logger.LogError(ex, "Error executing function 'sp_breachlistbypriority'");
-                throw;
-            }
-        } 
-        
+        }
+
         public async Task<IEnumerable<IncidentDetailsByPriority>> GetIncidentDetailsByPriorityAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Executing function 'sp_getincidentdetailsbypriority' with parameters: {@Filter}", filter);
+            _logger.LogInformation("Executing function 'sp_getincidentdetailsbypriority'");
             using var connection = new NpgsqlConnection(_connectionString);
 
             var parameters = new DynamicParameters();
@@ -187,8 +177,6 @@ namespace Incident.Infrastructure.Repositories
             parameters.Add("@p_sortBy", string.IsNullOrEmpty(filter.SortBy) ? "Resolved" : filter.SortBy);
             parameters.Add("@p_sortOrder", string.IsNullOrEmpty(filter.SortOrder) ? "DESC" : filter.SortOrder);
 
-            try
-            {
                 await connection.OpenAsync();
                 var result = await connection.QueryAsync<IncidentDetailsByPriority>(
                     "SELECT * FROM \"sp_getincidentdetailsbypriority\"(@p_fromDate, @p_toDate, @p_category, @p_assignmentGroup, @p_assignedToName, @p_state, @p_search, @p_priority, @p_pageNumber, @p_pageSize, @p_sortBy, @p_sortOrder)",
@@ -196,51 +184,37 @@ namespace Incident.Infrastructure.Repositories
                 );
 
                 return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error executing function 'sp_getincidentdetailsbypriority'");
-                throw;
-            }
+
         }
+
         public async Task<IEnumerable<AssignmentGroup>> GetAssignmentGroupsAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Calling function 'sp_GetAssignmentGroups' with parameters: {@Filter}", filter);        
-            try
-            {
+            _logger.LogInformation("Calling function 'sp_GetAssignmentGroups'");
                 using var connection = new NpgsqlConnection(_connectionString);
-                var parameters = new DynamicParameters();        
+                var parameters = new DynamicParameters();
+
                 parameters.Add("@p_fromDate", filter.FromDate);
                 parameters.Add("@p_toDate", filter.ToDate);
                 parameters.Add("@p_assignmentGroup", filter.AssignmentGroup.ToCsv());
                 parameters.Add("@p_category", filter.Category.ToCsv());
                 parameters.Add("@p_state", filter.State.ToCsv());
                 parameters.Add("@p_priority", filter.Priority.ToCsv());
-                parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());        
-                await connection.OpenAsync();
+                parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
 
+                await connection.OpenAsync();
                 var result = await connection.QueryAsync<AssignmentGroup>(
                     "SELECT * FROM \"sp_getassignmentgroups\"(@p_fromDate, @p_toDate, @p_assignmentGroup, @p_category, @p_state, @p_priority, @p_assignedToName)",
                     parameters
-                );        
+                );
                 return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error executing function 'sp_GetAssignmentGroups'");
-                throw;
-            }
         }
-        
+
         public async Task<DashboardKpi?> GetDashboardKpisAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Calling function 'sp_GetDashboardKpis' with parameters: {@Filter}", filter);
-
-            try
-            {
+            _logger.LogInformation("Calling function 'sp_GetDashboardKpis'");
                 using var connection = new NpgsqlConnection(_connectionString);
                 var parameters = new DynamicParameters();
-                
+
                 parameters.Add("@p_fromDate", filter.FromDate);
                 parameters.Add("@p_toDate", filter.ToDate);
                 parameters.Add("@p_assignmentGroup", filter.AssignmentGroup.ToCsv());
@@ -248,28 +222,20 @@ namespace Incident.Infrastructure.Repositories
                 parameters.Add("@p_priority", filter.Priority.ToCsv());
                 parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
                 parameters.Add("@p_state", filter.State.ToCsv());
-            
+
                 await connection.OpenAsync();
-                
+
                 var result = await connection.QueryFirstOrDefaultAsync<DashboardKpi>(
-                    "SELECT * FROM \"sp_getdashboardkpis\"(@p_fromDate, @p_toDate, @p_assignmentGroup, @p_category, @p_priority, @p_assignedToName, @p_state)", // Presuming sp_GetDashboardKpis exists
+                    "SELECT * FROM \"sp_getdashboardkpis\"(@p_fromDate, @p_toDate, @p_assignmentGroup, @p_category, @p_priority, @p_assignedToName, @p_state)",
                     parameters
                 );
-
                 return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error executing function 'sp_GetDashboardKpis'");
-                throw;
-            }
+            
         }
+
         public async Task<IEnumerable<StatusCountByPriority>> GetStatusCountByPriorityAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Calling function 'sp_StatusCountByPriority' with parameters: {@Filter}", filter);
-
-            try
-            {
+            _logger.LogInformation("Calling function 'sp_StatusCountByPriority'");
                 using var connection = new NpgsqlConnection(_connectionString);
                 var parameters = new DynamicParameters();
 
@@ -283,24 +249,17 @@ namespace Incident.Infrastructure.Repositories
 
                 await connection.OpenAsync();
                 var result = await connection.QueryAsync<StatusCountByPriority>(
-                    "SELECT * FROM \"sp_statuscountbypriority\"(@p_fromDate, @p_toDate, @p_category, @p_assignmentGroup, @p_priority, @p_assignedToName, @p_state)", // Presuming sp_StatusCountByPriority exists
+                    "SELECT * FROM \"sp_statuscountbypriority\"(@p_fromDate, @p_toDate, @p_category, @p_assignmentGroup, @p_priority, @p_assignedToName, @p_state)",
                     parameters
                 );
-
                 return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error executing function 'sp_StatusCountByPriority'");
-                throw;
-            }
+
         }
+
         public async Task<IEnumerable<CategoryCountByGroup>> GetCategoryCountByGroupAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Calling function 'sp_GetCategoryCountByGroup' with parameters: {@Filter}", filter);
+            _logger.LogInformation("Calling function 'sp_GetCategoryCountByGroup'");
 
-            try
-            {
                 using var connection = new NpgsqlConnection(_connectionString);
                 var parameters = new DynamicParameters();
 
@@ -310,21 +269,15 @@ namespace Incident.Infrastructure.Repositories
 
                 await connection.OpenAsync();
                 var result = await connection.QueryAsync<CategoryCountByGroup>(
-                    "SELECT * FROM \"sp_getcategorycountbygroup\"(@p_fromDate, @p_toDate, @p_assignmentGroup)", // Presuming sp_GetCategoryCountByGroup exists
+                    "SELECT * FROM \"sp_getcategorycountbygroup\"(@p_fromDate, @p_toDate, @p_assignmentGroup)",
                     parameters
                 );
-
                 return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error executing function 'sp_GetCategoryCountByGroup'");
-                throw;
-            }
         }
+
         public async Task<IEnumerable<ExportIncident>> ExportIncidentsAsync(IncidentFilter filter)
         {
-            _logger.LogInformation("Calling function 'sp_ExportIncidents' with parameters: {@Filter}", filter);
+            _logger.LogInformation("Calling function 'sp_ExportIncidents'");
             using var connection = new NpgsqlConnection(_connectionString);
 
             var parameters = new DynamicParameters();
@@ -336,22 +289,12 @@ namespace Incident.Infrastructure.Repositories
             parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
             parameters.Add("@p_state", filter.State.ToCsv());
 
-            try
-            {
                 await connection.OpenAsync();
-
                 var result = await connection.QueryAsync<ExportIncident>(
-                    "SELECT * FROM \"sp_exportincidents\"(@p_fromDate, @p_toDate, @p_category, @p_assignmentGroup, @p_priority, @p_assignedToName, @p_state)", // Presuming sp_ExportIncidents exists
+                    "SELECT * FROM \"sp_exportincidents\"(@p_fromDate, @p_toDate, @p_category, @p_assignmentGroup, @p_priority, @p_assignedToName, @p_state)",
                     parameters
                 );
-
                 return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error executing function 'sp_ExportIncidents'");
-                throw;
-            }
         }
     }
 }

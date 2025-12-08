@@ -1,6 +1,6 @@
 using Dapper;
 using Incident.Application.Interfaces;
-using Incident.Domain.Models;
+using Incident.Domain.Entities;
 using Npgsql; 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -29,21 +29,12 @@ namespace Incident.Infrastructure.Repositories
             var parameters = new DynamicParameters();
             parameters.Add("@Email", Email);
             parameters.Add("@Password", password);
-
-            try
-            {
                 await connection.OpenAsync();
                 var result = await connection.QueryFirstOrDefaultAsync<User>(
                     "SELECT * FROM \"sp_login\"(@Email, @Password)",
                     parameters
                 );                
                 return result; 
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error executing PostgreSQL function 'sp_login'");
-                throw;
-            }
         }
         
         public async Task<PasswordUpdateResult> UpdatePasswordByDefaultAsync(
@@ -57,8 +48,6 @@ namespace Incident.Infrastructure.Repositories
             parameters.Add("@NewPassword", newPassword);
             parameters.Add("@ConfirmNewPassword", confirmNewPassword);
 
-            try
-            {
                 await connection.OpenAsync();            
                 await connection.ExecuteAsync(
                     "SELECT \"sp_updatepasswordbydefault\"(@DefaultPassword, @NewPassword, @ConfirmNewPassword)",
@@ -69,25 +58,6 @@ namespace Incident.Infrastructure.Repositories
                     Success = true,
                     Message = "Password updated successfully."
                 };
-            }
-            catch (NpgsqlException ex) 
-            {
-                _logger.LogWarning(ex, "Failed to update password");
-                return new PasswordUpdateResult
-                {
-                    Success = false,
-                    Message = ex.Message 
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error updating password");
-                return new PasswordUpdateResult
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred while updating the password."
-                };
-            }
         }
     }
 }

@@ -13,4 +13,5 @@ namespace Incident.Application.Exceptions
     public class UnsupportedFormatException : Exception
     { public UnsupportedFormatException(string m) : base(m) { } }
 
+
 }
