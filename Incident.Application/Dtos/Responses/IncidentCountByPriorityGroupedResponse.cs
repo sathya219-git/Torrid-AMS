@@ -7,20 +7,12 @@ namespace Incident.Application.Dtos.Responses
 
     public class PriorityData
     {
-        public List<IncidentStateCount> Details { get; set; } = new();
+        public Dictionary<string, long> StateDetails { get; set; } = new();
+        public int TotalCountForPriority { get; set; }
         public string AvgResolvedTime { get; set; } = string.Empty;
         public string TotalResolvedTime { get; set; } = string.Empty;
-        public int BreachedCount {get; set;}
-    }
-
-    public class IncidentStateCount
-    {
-        public int TotalCount { get; set; }
-        public int Open { get; set; }
-        public int InProgress { get; set; }
-        public int Closed { get; set; }
-        public int OnHold { get; set; }
-        public int Reopen { get; set; }
-        public int Resolved { get; set; }
+        public long BreachedCount { get; set; }
+        public long OpenMoreThan15Days { get; set; }
+        public long OpenLessThan15Days { get; set; }
     }
 }

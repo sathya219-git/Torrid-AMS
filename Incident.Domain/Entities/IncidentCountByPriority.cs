@@ -4,10 +4,14 @@ namespace Incident.Domain.Entities
     {
         public string Priority { get; set; } = string.Empty;
         public string State { get; set; } = string.Empty;
-        public int IncidentCount { get; set; }
-        public int TotalCount { get; set; }
+        public long IncidentCount { get; set; }
+        public long TotalCount { get; set; }
+
         public string AvgResolvedTime { get; set; } = string.Empty;
         public string TotalResolvedTime { get; set; } = string.Empty;
-        public int BreachedCount {get; set;}
+
+        public long BreachedCount { get; set; }
+        public long Open_more_15_days { get; set; }
+        public long Open_less_15_days { get; set; }
     }
 }

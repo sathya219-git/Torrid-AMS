@@ -68,7 +68,6 @@ namespace IncidentAPI.Controllers
             var filter = request.ToDomainFilter();
             var result = await _incidentService.GetIncidentCountByPriorityAsync(filter);
 
-            // The complex grouping logic is now hidden in the mapper
             return Ok(result.ToResponse());
         }
 

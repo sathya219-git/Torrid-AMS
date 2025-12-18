@@ -44,10 +44,11 @@ namespace IncidentAPI.Mappers
             return new DashboardKpiResponse
             {
                 TotalIncidents = kpi.TotalIncidents,
-                OpenIncidents = kpi.OpenIncidents,
-                InProgressIncidents = kpi.InProgressIncidents,
-                ClosedIncidents = kpi.ClosedIncidents,
-                BreachedCount = kpi.Breached
+                OpenCount = kpi.Open_Count,
+                BreachedCount = kpi.Breached_Count,
+                OpenMore15Days = kpi.Open_More_15_Days,
+                OpenLess15Days = kpi.Open_Less_15_Days,
+                States = kpi.StateCounts
             };
         }
 
@@ -118,31 +119,35 @@ namespace IncidentAPI.Mappers
 
             if (counts == null || !counts.Any()) return response;
 
-            foreach (var group in counts.GroupBy(r => r.Priority))
+            // Group by Priority (P1, P2, etc.)
+            foreach (var priorityGroup in counts.GroupBy(r => r.Priority))
             {
-                var first = group.First();
+                // Use the first record of the group for common priority-level metrics
+                var first = priorityGroup.First();
 
-                var stateCount = new IncidentStateCount
+                var data = new PriorityData
                 {
-                    TotalCount = first.TotalCount,
-                    Open = group.FirstOrDefault(g => g.State.Equals("Open", System.StringComparison.OrdinalIgnoreCase))?.IncidentCount ?? 0,
-                    InProgress = group.FirstOrDefault(g => g.State.Equals("In Progress", System.StringComparison.OrdinalIgnoreCase))?.IncidentCount ?? 0,
-                    Closed = group.FirstOrDefault(g => g.State.Equals("Closed", System.StringComparison.OrdinalIgnoreCase))?.IncidentCount ?? 0,
-                    OnHold = group.FirstOrDefault(g => g.State.Equals("On Hold", System.StringComparison.OrdinalIgnoreCase))?.IncidentCount ?? 0,
-                    Reopen = group.FirstOrDefault(g => g.State.Equals("Reopen", System.StringComparison.OrdinalIgnoreCase))?.IncidentCount ?? 0,
-                    Resolved = group.FirstOrDefault(g => g.State.Equals("Resolved", System.StringComparison.OrdinalIgnoreCase))?.IncidentCount ?? 0
-                };
-
-                var totalBreachedForPriority = group.Sum(g => g.BreachedCount);
-
-                response.Priority[group.Key] = new PriorityData
-                {
-                    Details = new List<IncidentStateCount> { stateCount },
+                    TotalCountForPriority = (int)first.TotalCount,
                     AvgResolvedTime = first.AvgResolvedTime,
                     TotalResolvedTime = first.TotalResolvedTime,
-                    BreachedCount = totalBreachedForPriority
+                    // Summing metrics that might exist across multiple state rows for this priority
+                    BreachedCount = priorityGroup.Sum(g => g.BreachedCount),
+                    OpenMoreThan15Days = priorityGroup.Sum(g => g.Open_more_15_days),
+                    OpenLessThan15Days = priorityGroup.Sum(g => g.Open_less_15_days)
                 };
+
+                // AUTOMATIC HANDLING: Map every state returned by the DB
+                foreach (var item in priorityGroup)
+                {
+                    if (!string.IsNullOrEmpty(item.State))
+                    {
+                        data.StateDetails[item.State] = item.IncidentCount;
+                    }
+                }
+
+                response.Priority[priorityGroup.Key] = data;
             }
+
             return response;
         }
 

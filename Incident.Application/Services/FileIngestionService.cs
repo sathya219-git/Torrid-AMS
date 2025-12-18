@@ -54,33 +54,58 @@ namespace Incident.Application.Services
                 ConfigureDataTable = _ => new ExcelDataTableConfiguration { UseHeaderRow = false }
             });
 
-            if (ds.Tables.Count == 0 || ds.Tables[0].Rows.Count == 0)
-                throw new UnsupportedFormatException("No sheets or data rows detected.");
-
             var table = ds.Tables[0];
-
-            // find first non-empty row as header
-            int headerRowIndex = 0;
-            while (headerRowIndex < table.Rows.Count && table.Rows[headerRowIndex].ItemArray.All(c => string.IsNullOrWhiteSpace(c?.ToString())))
-                headerRowIndex++;
-
-            if (headerRowIndex >= table.Rows.Count)
-                throw new UnsupportedFormatException("No header row found.");
-
+            int headerRowIndex = 0; // Or use your loop to find the non-empty row
             var headerRow = table.Rows[headerRowIndex];
-            var headers = headerRow.ItemArray.Select(v => v?.ToString()?.Trim() ?? string.Empty).ToList();
-            ValidateHeaders(headers);
 
-            using (var fs = new FileStream(csvPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            // --- NEW LOOSE MATCH MAPPING LOGIC START ---
+
+            var expectedHeaders = _ingestion.ExpectedHeaders ?? new List<string>();
+
+            // 1. Build a Normalized Map of what is actually in the Excel file
+            // Key: "sladue", Value: 17 (the index in the Excel row)
+            var actualExcelMap = headerRow.ItemArray
+                .Select((val, idx) => new {
+                    NormalizedName = Normalize(val?.ToString()),
+                    Index = idx
+                })
+                .Where(x => !string.IsNullOrEmpty(x.NormalizedName))
+                .GroupBy(x => x.NormalizedName)
+                .ToDictionary(g => g.Key, g => g.First().Index);
+
+            // 2. Map Expected Headers to the Actual Indices
+            // This creates an ordered list of "where to pluck from"
+            var targetIndices = expectedHeaders
+                .Select(h => {
+                    var normExpected = Normalize(h);
+                    if (!actualExcelMap.TryGetValue(normExpected, out int excelIdx))
+                    {
+                        throw new HeaderValidationException($"Required column '{h}' not found.");
+                    }
+                    return excelIdx;
+                })
+                .ToList();
+
+            // 3. Write the CSV
+            using (var fs = new FileStream(csvPath, FileMode.Create, FileAccess.Write, FileShare.None))
             using (var sw = new StreamWriter(fs, new UTF8Encoding(false)))
             {
-                for (int r = headerRowIndex; r < table.Rows.Count; r++)
-                {
-                    var values = table.Rows[r].ItemArray
-                        .Select((cell, index) => ConvertToCsvValue(cell, headers[index]))
-                        .ToList();
+                // Write standard headers from appsettings (Order is guaranteed 1 to 21)
+                await sw.WriteLineAsync(string.Join(",", expectedHeaders.Select(ToCsvField)));
 
-                    await sw.WriteLineAsync(string.Join(",", values));
+                for (int r = headerRowIndex + 1; r < table.Rows.Count; r++)
+                {
+                    var excelRow = table.Rows[r];
+
+                    // Pluck only the columns we want in the exact order we want them
+                    var csvValues = targetIndices.Select((excelIdx, targetPos) =>
+                    {
+                        var cellValue = excelRow[excelIdx];
+                        var headerName = expectedHeaders[targetPos];
+                        return ConvertToCsvValue(cellValue, headerName);
+                    });
+
+                    await sw.WriteLineAsync(string.Join(",", csvValues));
                 }
             }
 
@@ -135,7 +160,16 @@ namespace Incident.Application.Services
             }
             return ToCsvField(raw);
         }
+        private string Normalize(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return string.Empty;
 
+            // Removes spaces, casing, and special characters
+            // e.g., "SLA due " becomes "sladue"
+            return new string(input.ToLowerInvariant()
+                                   .Where(c => char.IsLetterOrDigit(c))
+                                   .ToArray());
+        }
         private IExcelDataReader CreateExcelReader(Stream s, string ext)
         {
             return ext switch

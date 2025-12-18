@@ -1,11 +1,9 @@
-namespace Incident.Application.Dtos.Responses
+public class DashboardKpiResponse
 {
-    public class DashboardKpiResponse
-    {
-        public int TotalIncidents { get; set; }
-        public int OpenIncidents { get; set; }
-        public int InProgressIncidents { get; set; }
-        public int ClosedIncidents { get; set; }
-        public int BreachedCount { get; set; }
-    }
+    public int TotalIncidents { get; set; }
+    public int OpenCount { get; set; }
+    public int BreachedCount { get; set; }
+    public int OpenMore15Days { get; set; }
+    public int OpenLess15Days { get; set; }
+    public Dictionary<string, int> States { get; set; }
 }

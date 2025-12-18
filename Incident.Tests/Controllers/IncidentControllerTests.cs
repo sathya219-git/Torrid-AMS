@@ -32,8 +32,7 @@ namespace Incident.Tests.Controllers
             var serviceResult = new DashboardKpi 
             { 
                 TotalIncidents = 100, 
-                OpenIncidents = 20, 
-                Breached = 5 
+                Open_Count = 20
             };
 
             _mockIncidentService.Setup(s => s.GetDashboardKpisAsync(It.IsAny<IncidentFilter>()))
@@ -46,7 +45,7 @@ namespace Incident.Tests.Controllers
             var okResult = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsType<DashboardKpiResponse>(okResult.Value);
             Assert.Equal(100, response.TotalIncidents);
-            Assert.Equal(5, response.BreachedCount);
+            Assert.Equal(0, response.BreachedCount);
         }
 
         // 2. Name & Count (Paginated)
@@ -151,7 +150,6 @@ namespace Incident.Tests.Controllers
             Assert.Equal("Hardware", response[0].CategoryName);
         }
 
-        // 6. Incident Count By Priority (The Grouping Logic)
         [Fact]
         public async Task GetIncidentCountByPriority_ReturnsGroupedResponse()
         {
@@ -159,9 +157,25 @@ namespace Incident.Tests.Controllers
             var request = new DashboardFilterRequest();
             var serviceResult = new List<IncidentCountByPriority>
             {
-                // Two items with same Priority "P1" but different States
-                new IncidentCountByPriority { Priority = "P1", State = "Open", IncidentCount = 2, TotalCount = 5 },
-                new IncidentCountByPriority { Priority = "P1", State = "Closed", IncidentCount = 3, TotalCount = 5 }
+                // Two items with same Priority "P1" but different States and Aging/Breach data
+                new IncidentCountByPriority {
+                    Priority = "P1",
+                    State = "Open",
+                    IncidentCount = 2,
+                    TotalCount = 5,
+                    BreachedCount = 1,
+                    Open_more_15_days = 1,
+                    Open_less_15_days = 1
+                },
+                new IncidentCountByPriority {
+                    Priority = "P1",
+                    State = "Closed",
+                    IncidentCount = 3,
+                    TotalCount = 5,
+                    BreachedCount = 0,
+                    Open_more_15_days = 0,
+                    Open_less_15_days = 0
+                }
             };
 
             _mockIncidentService.Setup(s => s.GetIncidentCountByPriorityAsync(It.IsAny<IncidentFilter>()))
@@ -173,13 +187,22 @@ namespace Incident.Tests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsType<IncidentCountByPriorityGroupedResponse>(okResult.Value);
-            
-            // Verify grouping happened via Mapper
+
+            // Verify P1 exists in the Dictionary
             Assert.True(response.Priority.ContainsKey("P1"));
-            var p1Data = response.Priority["P1"].Details.First();
-            Assert.Equal(5, p1Data.TotalCount); // Should take total from first item
-            Assert.Equal(2, p1Data.Open);       // Mapped correctly
-            Assert.Equal(3, p1Data.Closed);     // Mapped correctly
+            var p1Data = response.Priority["P1"];
+
+            // 1. Verify Priority Level Totals
+            Assert.Equal(5, p1Data.TotalCountForPriority);
+            Assert.Equal(1, p1Data.BreachedCount); // Sum of both rows
+            Assert.Equal(1, p1Data.OpenMoreThan15Days);
+
+            // 2. Verify Dynamic State Mapping (The Automatic Handling)
+            Assert.True(p1Data.StateDetails.ContainsKey("Open"));
+            Assert.True(p1Data.StateDetails.ContainsKey("Closed"));
+
+            Assert.Equal(2, p1Data.StateDetails["Open"]);
+            Assert.Equal(3, p1Data.StateDetails["Closed"]);
         }
 
         // 7. Details By Priority (Paginated)

@@ -1,4 +1,5 @@
 using Dapper;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Incident.Application.Dtos.Requests;
 using Incident.Application.Helpers; 
 using Incident.Application.Interfaces;
@@ -104,26 +105,24 @@ namespace Incident.Infrastructure.Repositories
         {
             _logger.LogInformation("Calling function 'sp_incidentcountbypriority'");
 
-                using var connection = new NpgsqlConnection(_connectionString);
-                var parameters = new DynamicParameters();
+            using var connection = new NpgsqlConnection(_connectionString);
+            var parameters = new DynamicParameters();
 
-                parameters.Add("@p_fromDate", filter.FromDate);
-                parameters.Add("@p_toDate", filter.ToDate);
-                parameters.Add("@p_assignmentGroup", filter.AssignmentGroup.ToCsv());
-                parameters.Add("@p_category", filter.Category.ToCsv());
-                parameters.Add("@p_priority", filter.Priority.ToCsv());
-                parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
-                parameters.Add("@p_state", filter.State.ToCsv());
+            // Ensure these match the order/names in the PG function
+            parameters.Add("p_fromdate", filter.FromDate);
+            parameters.Add("p_todate", filter.ToDate);
+            parameters.Add("p_category", filter.Category.ToCsv());
+            parameters.Add("p_assignmentgroup", filter.AssignmentGroup.ToCsv());
+            parameters.Add("p_priority", filter.Priority.ToCsv());
+            parameters.Add("p_assignedtoname", filter.AssignedToName.ToCsv());
+            parameters.Add("p_state", filter.State.ToCsv());
 
-                await connection.OpenAsync();
+            await connection.OpenAsync();
 
-                // Dapper maps BigInt columns to Int properties automatically here, unlike with 'dynamic'
-                var result = await connection.QueryAsync<IncidentCountByPriority>(
-                    "SELECT * FROM \"sp_incidentcountbypriority\"(@p_fromDate, @p_toDate, @p_category, @p_assignmentGroup, @p_priority, @p_assignedToName, @p_state)",
-                    parameters
-                );
-
-                return result;
+            return await connection.QueryAsync<IncidentCountByPriority>(
+                "SELECT * FROM public.sp_incidentcountbypriority(@p_fromdate, @p_todate, @p_category, @p_assignmentgroup, @p_priority, @p_assignedtoname, @p_state)",
+                parameters
+            );
         }
 
         public async Task<IEnumerable<BreachListItem>> GetBreachListByPriorityAsync(IncidentFilter filter)
@@ -225,12 +224,32 @@ namespace Incident.Infrastructure.Repositories
 
                 await connection.OpenAsync();
 
-                var result = await connection.QueryFirstOrDefaultAsync<DashboardKpi>(
+                var row = await connection.QueryFirstOrDefaultAsync<dynamic>(
                     "SELECT * FROM \"sp_getdashboardkpis\"(@p_fromDate, @p_toDate, @p_assignmentGroup, @p_category, @p_priority, @p_assignedToName, @p_state)",
                     parameters
                 );
-                return result;
-            
+            if (row == null) return null;
+
+            var kpi = new DashboardKpi
+            {
+                TotalIncidents = (int)row.totalincidents,
+                Breached_Count = (int)row.breached_count,
+                Open_Count = (int)row.open_count,
+                Open_More_15_Days = (int)row.open_more_15_days,
+                Open_Less_15_Days = (int)row.open_less_15_days
+            };
+
+            var rowDict = (IDictionary<string, object>)row;
+            foreach (var key in rowDict.Keys)
+            {
+                if (key.EndsWith("_count") && key != "breached_count" && key != "open_count")
+                {
+                    kpi.StateCounts.Add(key.Replace("_count", ""), Convert.ToInt32(rowDict[key]));
+                }
+            }
+
+            return kpi;
+
         }
 
         public async Task<IEnumerable<StatusCountByPriority>> GetStatusCountByPriorityAsync(IncidentFilter filter)
