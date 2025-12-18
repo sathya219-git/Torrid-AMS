@@ -228,7 +228,7 @@ namespace Incident.Infrastructure.Repositories
                     "SELECT * FROM \"sp_getdashboardkpis\"(@p_fromDate, @p_toDate, @p_assignmentGroup, @p_category, @p_priority, @p_assignedToName, @p_state)",
                     parameters
                 );
-            if (row == null) return null;
+            if ((int)row.totalincidents == 0) return null;
  
             var kpi = new DashboardKpi
             {
