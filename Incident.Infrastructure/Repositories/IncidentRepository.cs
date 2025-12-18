@@ -213,7 +213,7 @@ namespace Incident.Infrastructure.Repositories
             _logger.LogInformation("Calling function 'sp_GetDashboardKpis'");
                 using var connection = new NpgsqlConnection(_connectionString);
                 var parameters = new DynamicParameters();
-
+ 
                 parameters.Add("@p_fromDate", filter.FromDate);
                 parameters.Add("@p_toDate", filter.ToDate);
                 parameters.Add("@p_assignmentGroup", filter.AssignmentGroup.ToCsv());
@@ -221,15 +221,15 @@ namespace Incident.Infrastructure.Repositories
                 parameters.Add("@p_priority", filter.Priority.ToCsv());
                 parameters.Add("@p_assignedToName", filter.AssignedToName.ToCsv());
                 parameters.Add("@p_state", filter.State.ToCsv());
-
+ 
                 await connection.OpenAsync();
-
+ 
                 var row = await connection.QueryFirstOrDefaultAsync<dynamic>(
                     "SELECT * FROM \"sp_getdashboardkpis\"(@p_fromDate, @p_toDate, @p_assignmentGroup, @p_category, @p_priority, @p_assignedToName, @p_state)",
                     parameters
                 );
             if (row == null) return null;
-
+ 
             var kpi = new DashboardKpi
             {
                 TotalIncidents = (int)row.totalincidents,
@@ -238,18 +238,15 @@ namespace Incident.Infrastructure.Repositories
                 Open_More_15_Days = (int)row.open_more_15_days,
                 Open_Less_15_Days = (int)row.open_less_15_days
             };
-
-            var rowDict = (IDictionary<string, object>)row;
-            foreach (var key in rowDict.Keys)
+ 
+            if (row.state_counts != null)
             {
-                if (key.EndsWith("_count") && key != "breached_count" && key != "open_count")
-                {
-                    kpi.StateCounts.Add(key.Replace("_count", ""), Convert.ToInt32(rowDict[key]));
-                }
-            }
-
+                string jsonContent = row.state_counts.ToString(); 
+                kpi.StateCounts = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, int>>(jsonContent)
+                                  ?? new Dictionary<string, int>();
+            } 
             return kpi;
-
+ 
         }
 
         public async Task<IEnumerable<StatusCountByPriority>> GetStatusCountByPriorityAsync(IncidentFilter filter)

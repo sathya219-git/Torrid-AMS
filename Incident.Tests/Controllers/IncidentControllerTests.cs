@@ -23,29 +23,40 @@ namespace Incident.Tests.Controllers
             _controller = new IncidentController(_mockIncidentService.Object);
         }
 
-        // 1. KPI Endpoint
         [Fact]
         public async Task GetDashboardKpis_ReturnsOk_WithCorrectData()
         {
-            // Arrange
             var request = new DashboardFilterRequest();
             var serviceResult = new DashboardKpi 
             { 
                 TotalIncidents = 100, 
-                Open_Count = 20
+                Open_Count = 20,
+                Breached_Count = 5,
+                Open_More_15_Days = 12,
+                Open_Less_15_Days = 8,
+                StateCounts = new Dictionary<string, int> 
+                { 
+                    { "New", 5 }, 
+                    { "In Progress", 15 } 
+                }
             };
-
+        
             _mockIncidentService.Setup(s => s.GetDashboardKpisAsync(It.IsAny<IncidentFilter>()))
                 .ReturnsAsync(serviceResult);
 
-            // Act
             var result = await _controller.GetDashboardKpis(request);
-
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsType<DashboardKpiResponse>(okResult.Value);
+
             Assert.Equal(100, response.TotalIncidents);
-            Assert.Equal(0, response.BreachedCount);
+            Assert.Equal(20, response.OpenCount);
+            Assert.Equal(5, response.BreachedCount);
+            Assert.Equal(12, response.OpenMore15Days);
+            Assert.NotNull(response.States);
+            Assert.Equal(2, response.States.Count);
+            Assert.Equal(5, response.States["New"]);
+            Assert.Equal(15, response.States["In Progress"]);
+
         }
 
         // 2. Name & Count (Paginated)
